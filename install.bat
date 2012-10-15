@@ -1,0 +1,1 @@
+palm-install com.spinn.utube_1.0.0_all.ipk

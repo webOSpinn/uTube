@@ -1,0 +1,12 @@
+{
+	"id": "com.spinn.utube",
+	"version": "1.0.0",
+	"vendor": "Spinn",
+	"type": "web",
+	"main": "index.html",
+	"title": "uTube",
+	"icon": "icon.png",
+	"splashicon": "splashIcon.png",
+	"visible": true,
+	"uiRevision": 2
+}
