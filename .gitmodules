@@ -1,0 +1,3 @@
+[submodule "application/Spinn"]
+	path = application/Spinn
+	url = git://github.com/webOSpinn/Spinn.git
