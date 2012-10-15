@@ -1,3 +1,26 @@
+/*
+This will return data in the following format:
+{
+	"query" : {
+		"count" : 2,
+		"created" : "2012-10-15T01:07:08Z",
+		"lang" : "en-US",
+		"results" : {
+			"item" : [{
+					"title" : "TITLE HERE",
+					"description" : "DESCRIPTION HERE",
+					"link" : "LINK HERE"
+				}, {
+					"title" : "TITLE HERE",
+					"description" : "DESCRIPTION HERE",
+					"link" : "LINK HERE"
+				}
+			]
+		}
+	}
+}
+
+*/
 enyo.kind({
 	name: "RssToJson",
 	kind: enyo.Component,
