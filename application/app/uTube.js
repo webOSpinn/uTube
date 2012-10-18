@@ -9,6 +9,7 @@ enyo.kind({
 		{kind: "Spinn.InputDialog", name: "addUserDialog", caption: "Add User", 
 			affirmCaption: "Add", denyCaption: "Cancel",
 			inputHint: "Enter YouTube User Name.",
+			directions: "",
 			onSubmit: "handleNewUser", onCancel: "handleCancelNewUser"},
 		{kind: "SlidingPane", name: "slidingPane", flex: 1, components: [
 			{name: "userPane", width: "320px", components: [
@@ -27,8 +28,7 @@ enyo.kind({
 						components: [{
 							name: "newButton",
 							kind: "ToolButton",
-							icon: "new-btn",
-							iconIsClassName: true,
+							icon: "./images/menu-icon-new.png",
 							onclick: "addNewUser"
 						}]
 					}
@@ -57,8 +57,7 @@ enyo.kind({
 							{
 								name: "syncButton",
 								kind: "ToolButton",
-								icon: "sync-btn",
-								iconIsClassName: true,
+								icon: "./images/menu-icon-sync.png",
 								onclick: "syncClick"
 							}]
 						}
@@ -81,8 +80,7 @@ enyo.kind({
 							{
 								name: "shareButton",
 								kind: "ToolButton",
-								icon: "share-btn",
-								iconIsClassName: true,
+								icon: "./images/menu-icon-share.png",
 								onmousedown: "noteMousedown",
 								onmouseup: "shareDocument"
 							}]
