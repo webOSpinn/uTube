@@ -70,7 +70,7 @@ enyo.kind({
 					{kind: "VFlexBox",  flex: 1, components: [
 						{kind: "Header", content: "Video Player"},
 						{kind: "HFlexBox",  flex: 1, align:"center", pack:"center", components: [
-							{kind: "YouTubeViewer", name: "viewer", videoWidth: 640, videoHeight: 360, videoName: ""}
+							{kind: "YouTubeViewer", name: "vidViewer", style: "width: 640px; height: 360px;"}
 						]},
 						{kind: "Toolbar",
 							components: [{
@@ -91,15 +91,15 @@ enyo.kind({
 		]}
 	],
 	addNewUser: function(inSender, inResponse){
-		this.$.viewer.hide();
+		//this.$.vidViewer.hide();
 		this.$.addUserDialog.openAtCenter();
 	},
 	handleNewUser: function(inSender, inResponse){
-		this.$.viewer.show();
+		//this.$.vidViewer.show();
 		this.$.rssService.getRss("http://www.youtube.com/rss/user/" + inResponse.userInput + "/videos.rss");
 	},
 	handleCancelNewUser: function(inSender, inResponse){
-		this.$.viewer.show();
+		//this.$.vidViewer.show();
 	},
 	RssAnswer: function (inSender, inResponse){
 		this.videos = inResponse.query.results.item;
@@ -134,9 +134,10 @@ enyo.kind({
 				//Select the clicked item
 				inSender.setSelectedItem(inEvent.rowIndex, vid.link);
 				
-				var videoName = vid.link.replace('http://www.youtube.com/watch?v=','');
-				videoName = videoName.replace('&feature=youtube_gdata','');
-				this.$.viewer.setVideoName(videoName);
+				var videoId = vid.link.replace('http://www.youtube.com/watch?v=','');
+				videoId = videoId.replace('&feature=youtube_gdata','');
+				console.log("VideoId: " + videoId);
+				this.$.vidViewer.setVideoId(videoId);
 			}
 			
 			//Always go to the location details pane on a phone

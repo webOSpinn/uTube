@@ -5,17 +5,17 @@ enyo.kind({
 		https: false,
 		privacyEnhancedMode: false,
 		showSuggestedVideos: true,
-		videoHeight: 315,
-		videoName: "",
-		videoWidth: 560
+		videoId: ""
 	},
-	components: [
-		{name: "videoContent", kind: "HtmlContent", allowHtml: true, content: "", onLinkClick: "htmlContentLinkClick", flex:1}
-	],
-	rendered: function() {
-		this.checkHeight();
-		this.checkWidth();
-		this.renderVideo();
+	className: "image-viewer",
+	components:[
+	{
+		kind: "WebView",
+		name: "WV",
+		flex: 1
+	}],
+	create: function() {
+		this.inherited(arguments);
 	},
 	httpsChanged: function() {
 		this.renderVideo();
@@ -26,60 +26,31 @@ enyo.kind({
 	showSuggestedVideosChanged: function() {
 		this.renderVideo();
 	},
-	videoHeightChanged: function() {
-		this.checkHeight();
+	videoIdChanged: function() {
 		this.renderVideo();
-	},
-	videoNameChanged: function() {
-		this.renderVideo();
-	},
-	videoWidthChanged: function() {
-		this.checkWidth();
-		this.renderVideo();
-	},
-	checkHeight: function() {
-		var defaultVal = 315;
-		if (enyo.isInt(this.videoHeight)) {
-			if(this.videoHeight < 0){
-				this.videoHeight = defaultVal;
-			}
-		}else{
-			this.videoHeight = defaultVal;
-		}
-	},
-	checkWidth: function(){
-		var defaultVal = 560;
-		if (enyo.isInt(this.videoWidth)) {
-			if(this.videoWidth < 0){
-				this.videoWidth = defaultVal;
-			}
-		}else{
-			this.videoWidth = defaultVal;
-		}
 	},
 	renderVideo: function() {
-		var content = ''
+		var vidUrl = ''
 		
 		//Make sure that there is a video name supplied
-		if(enyo.exists(this.videoName)) {
-			var temp = enyo.string.trim(this.videoName);
+		if(enyo.exists(this.videoId)) {
+			var temp = enyo.string.trim(this.videoId);
 			if(temp != "") {
-				content = '<iframe width="' + this.videoWidth + '" height="' + this.videoHeight + '" src="http';
+				vidUrl = 'http';
 				if(this.https == true){
-					content = content + 's';
+					vidUrl = vidUrl + 's';
 				}
-				content = content + '://www.youtube';
+				vidUrl = vidUrl + '://www.youtube';
 				if(this.privacyEnhancedMode == true){
-					content = content + '-nocookie';
+					vidUrl = vidUrl + '-nocookie';
 				}
-				content = content + '.com/embed/' + this.getVideoName()
+				vidUrl = vidUrl + '.com/embed/' + this.getVideoId()
 				if(this.showSuggestedVideos == false){
-					content = content + '?rel=0'
+					vidUrl = vidUrl + '?rel=0'
 				}
-				content = content + '" frameborder="0" allowfullscreen></iframe>';
 			}
 		}
-		this.$.videoContent.setContent(content);
-	},
-	htmlContentLinkClick: function(inSender, inUrl) { /* do nothing when the link is clicked. */ }
-});
+		console.log("URL: " + vidUrl);
+		this.$.WV.setUrl(vidUrl);
+	}
+})
