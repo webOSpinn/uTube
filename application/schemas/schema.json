@@ -8,12 +8,12 @@
 			{ "column": "entityType", "type": "TEXT"  }
 		],
 		"data": [
-			{ "uTubeId": "palm", "name": "palm", "entityType": "user" },
-			{ "uTubeId": "webosinternals", "name": "webosinternals", "entityType": "user" },
-			{ "uTubeId": "webOSNation", "name": "webOSNation", "entityType": "user" },
-			{ "uTubeId": "enyojs", "name": "enyojs", "entityType": "user" },
-			{ "uTubeId": "Gramwebos", "name": "Gramwebos", "entityType": "user" }, 
-			{ "uTubeId": "UCEPktCGUc_bmqvCmX6FC-lA", "name": "webOS Ports", "entityType": "channel" }
+			{ "uTubeId": "palm", "name": "Palm", "entityType": "User" },
+			{ "uTubeId": "webosinternals", "name": "webOS Internals", "entityType": "User" },
+			{ "uTubeId": "webOSNation", "name": "webOS Nation", "entityType": "User" },
+			{ "uTubeId": "enyojs", "name": "EnyoJS", "entityType": "User" },
+			{ "uTubeId": "Gramwebos", "name": "Gram webOS", "entityType": "User" }, 
+			{ "uTubeId": "UCEPktCGUc_bmqvCmX6FC-lA", "name": "webOS Ports", "entityType": "Channel" }
 		]
 	},
 	{

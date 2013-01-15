@@ -8,5 +8,12 @@
 	"icon": "icon.png",
 	"splashicon": "splashIcon.png",
 	"visible": true,
-	"uiRevision": 2
+	"uiRevision": 2,
+	"vendorurl":"https://github.com/webOSpinn",
+	"aboutDialogInfo": {
+		"email": "spinn@outlook.com",
+		"emailSubject": "uTube",
+		"description": "This app is designed to let you watch videos from all of your favorite YouTube users and channels.",
+		"copyright": "&copy; Copyright 2013 Spinn"
+	}
 }

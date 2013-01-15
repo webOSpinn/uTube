@@ -7,7 +7,6 @@ enyo.kind({
 		showSuggestedVideos: true,
 		videoId: ""
 	},
-	//className: "image-viewer",
 	components:[
 	{
 		kind: "WebView",

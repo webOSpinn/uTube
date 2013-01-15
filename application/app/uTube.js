@@ -18,13 +18,14 @@ enyo.kind({
 			onSuccess: "YouTubeAnswer",
 			onFailure: "YouTubeFail"
 		},
-		{kind: "Spinn.InputDialog", name: "addUserDialog", caption: "Add User", 
-			affirmCaption: "Add", denyCaption: "Cancel",
-			inputHint: "Enter YouTube User Name.",
-			directions: "",
-			onSubmit: "handleNewUser", onCancel: "handleCancelNewUser"},
+		{kind: "Spinn.AboutDialog", name: "theAboutDialog"},
+		{kind: "AddEntityDialog", name: "addEntityDialog",
+			onSave: "handleNewEntity", onCancel: "handleCancelNewEntity"},
+		{name: "appMenu", kind: "AppMenu", components: [
+			{name: "about", caption: "About", onclick: "btnAbout_Click"}
+		]},
 		{kind: "SlidingPane", name: "slidingPane", flex: 1, components: [
-			{name: "userPane", width: "320px", components: [
+			{name: "entityPane", width: "320px", components: [
 				{kind: "VFlexBox",  flex: 1, components: [
 					{kind: "Header", content: "YouTube Users"},
 					{kind: "Scroller", name:"entityListScroller", flex: 1, autoHorizontal: false, horizontal: false,
@@ -41,7 +42,7 @@ enyo.kind({
 							name: "newButton",
 							kind: "ToolButton",
 							icon: "./images/menu-icon-new.png",
-							onclick: "addNewUser"
+							onclick: "addNewEntity"
 						}]
 					}
 				]}
@@ -132,15 +133,19 @@ enyo.kind({
 		if(enyo.isPhone())
 		{ this.addClass("isPhone"); }
 	},
-	addNewUser: function(inSender, inResponse){
+	btnAbout_Click: function() {
+		this.$.theAboutDialog.openAtCenter();
+	},
+	addNewEntity: function(inSender, inResponse){
 		//this.$.vidViewer.hide();
-		this.$.addUserDialog.openAtCenter();
+		this.$.addEntityDialog.openAtCenter();
 	},
-	handleNewUser: function(inSender, inResponse){
+	handleNewEntity: function(inSender, inEvent){
 		//this.$.vidViewer.show();
-		this.$.YouTubeService.getJson(inResponse.userInput);
+		//In this case I think refreshing just the entities will be sufficient (instead of refreshItems)
+		this.$.model.insertYouTubeEntity(inEvent.entity, this.$.model.bound.refreshYouTubeEntities);
 	},
-	handleCancelNewUser: function(inSender, inResponse){
+	handleCancelNewEntity: function(inSender, inResponse){
 		//this.$.vidViewer.show();
 	},
 	YouTubeAnswer: function (inSender, inResponse){

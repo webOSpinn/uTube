@@ -3,6 +3,7 @@ enyo.depends(
 	"app/database-enyo.js",
 	"app/YouTube-model.js",
 	"app/YouTubeApi.js",
+	"AddEntityDialog/depends.js",
 	"app/YouTubeViewer.js",
 	"app/uTube.js"
 );
