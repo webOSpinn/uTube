@@ -23,7 +23,7 @@ enyo.kind({
 						kind: "Picker",
 						name: "typePicker",
 						value: "User",
-						items: ["User", "Channel"]
+						items: ["User", "Channel", "Playlist"]
 					}
 				]}
 		]},

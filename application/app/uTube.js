@@ -82,7 +82,7 @@ enyo.kind({
 				components: [
 					{kind: "VFlexBox",  flex: 1, components: [
 						{kind: "Header", content: "Video Player"},
-						{kind: "HFlexBox",  flex: 1, align:"center", pack:"center", components: [
+						{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
 							{kind: "YouTubeViewer", name: "vidViewer", style: "width: 640px; height: 360px;"}
 						]},
 						{kind: "Toolbar",
@@ -183,7 +183,7 @@ enyo.kind({
 				
 				this.$.model.currentYouTubeEntity = entity;
 				//**************************TEMP CODE*************************************************
-				this.$.YouTubeService.getJson(entity.uTubeId);
+				this.$.YouTubeService.getJson(entity.uTubeId, entity.entityType);
 				//************************************************************************************this.$.model.refreshVideos();
 				//Scroll the video list back to the top - do it here because we are looking at a different list
 				this.$.videoListScroller.scrollTo(0,0);
@@ -223,8 +223,21 @@ enyo.kind({
 				//Select the clicked item
 				inSender.setSelectedItem(inEvent.rowIndex, vid.link[0].href);
 				
-				var videoId = vid.link[0].href.replace('http://www.youtube.com/watch?v=','');
-				videoId = videoId.replace('&feature=youtube_gdata','');
+				var videoId = "";
+				
+				switch(this.$.model.currentYouTubeEntity.entityType)
+				{
+					case "User":
+					case "Channel":
+						videoId = vid.link[0].href.replace('http://www.youtube.com/watch?v=','');
+						videoId = videoId.replace('&feature=youtube_gdata','');
+						break;
+					case "Playlist":
+						videoId = vid.link[1].href.replace('http://www.youtube.com/watch?v=','');
+						videoId = videoId.replace('&feature=youtube_gdata','');
+						break;
+					default:
+				}
 				console.log("VideoId: " + videoId);
 				this.$.vidViewer.setVideoId(videoId);
 			}
