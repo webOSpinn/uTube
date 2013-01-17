@@ -11,7 +11,7 @@ enyo.kind({
 	{
 		kind: "WebView",
 		name: "WV",
-		flex: 1
+		style: "width: 100%; height: 100%;"
 	}],
 	create: function() {
 		this.inherited(arguments);
