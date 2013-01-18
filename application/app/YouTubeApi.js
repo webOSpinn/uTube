@@ -22,7 +22,7 @@ enyo.kind({
 				url = "http://gdata.youtube.com/feeds/api/videos?max-results=50&alt=json&orderby=published&author=" + userOrChannelOrPlaylistId;
 				break;
 			case "Playlist":
-				url = "http://gdata.youtube.com/feeds/api/playlists/" + userOrChannelOrPlaylistId + "?v=2&alt=json";
+				url = "http://gdata.youtube.com/feeds/api/playlists/" + userOrChannelOrPlaylistId + "?v=2&alt=json&max-results=50";
 				break;
 			default:
 		}

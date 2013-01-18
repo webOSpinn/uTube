@@ -94,8 +94,7 @@ enyo.kind({
 								name: "shareButton",
 								kind: "ToolButton",
 								icon: "./images/menu-icon-share.png",
-								onmousedown: "noteMousedown",
-								onmouseup: "shareDocument"
+								onclick: "btnShare_Click"
 							}]
 						}
 					]}
@@ -135,6 +134,17 @@ enyo.kind({
 	},
 	btnAbout_Click: function() {
 		this.$.theAboutDialog.openAtCenter();
+	},
+	btnShare_Click: function(inSender) {
+		//Only show the webpage if the user is currently viewing a video
+		if(enyo.exists(this.$.vidViewer.getVideoId())) {
+			this.$.openApp.call({
+				"id": "com.palm.app.browser", 
+				"params": {
+					"target": "http://www.youtube.com/watch?v=" + this.$.vidViewer.getVideoId()
+				}
+			});
+		}
 	},
 	addNewEntity: function(inSender, inResponse){
 		//this.$.vidViewer.hide();
