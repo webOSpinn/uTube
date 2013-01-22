@@ -13,7 +13,7 @@ enyo.kind({
 		{kind: "Scroller", name:"theScroller", flex: 1, autoHorizontal: false, horizontal: false,
 			components: [
 				{kind: "RowGroup", caption: "YouTube ID:", components: [
-					{name: "uTubeID", kind: "Input", hint:"YouTube user or channel ID", onchange: "uTubeIDdChanged"}
+					{name: "uTubeId", kind: "Input", hint:"YouTube user or channel ID", onchange: "uTubeIdChanged"}
 				]},
 				{kind: "RowGroup", caption: "Name:", components: [
 					{name: "name", kind: "Input", hint:"Enter display name"}
@@ -38,16 +38,16 @@ enyo.kind({
 		this.$.theScroller.scrollTo(0,0);
 		this.clearFields();
 	},
-	uTubeIDdChanged: function (inSender, inEvent) {
+	uTubeIdChanged: function (inSender, inEvent) {
 		//Don't want to overwrite something if the user has already supplied input
 		if(enyo.string.trim(this.$.name.getValue()) == "") {
-			this.$.name.setValue(this.$.uTubeID.getValue());
+			this.$.name.setValue(this.$.uTubeId.getValue());
 		}
 	},
 	btnSave_Click: function (inSender, inEvent) {
 		if(this.validateFields()){
 			var entity = { 
-				uTubeID: this.$.uTubeID.getValue(),
+				uTubeId: this.$.uTubeId.getValue(),
 				name: this.$.name.getValue(),
 				entityType: this.$.typePicker.getValue()
 			}
@@ -61,17 +61,17 @@ enyo.kind({
 		this.close();
 	},
 	clearFields: function() {
-		this.$.uTubeID.setValue("");
+		this.$.uTubeId.setValue("");
 		this.$.name.setValue("");
 		this.$.typePicker.setValue("User");
 	},
 	validateFields: function() {
 		var temp = "";
 		
-		//Check uTubeID
-		temp = enyo.string.trim(this.$.uTubeID.getValue());
+		//Check uTubeId
+		temp = enyo.string.trim(this.$.uTubeId.getValue());
 		if(temp == "") {
-			this.handleInvalidInput(this.$.uTubeID, "Please enter the YouTube ID.");
+			this.handleInvalidInput(this.$.uTubeId, "Please enter the YouTube ID.");
 			return false;
 		} 
 		

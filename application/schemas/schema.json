@@ -2,10 +2,10 @@
 	{
 		"table": "youTubeEntities",
 		"columns": [
-			{ "column": "entityID", "type": "INTEGER", "constraints": ["PRIMARY KEY"] },
-			{ "column": "uTubeId", "type": "TEXT" },
-			{ "column": "name", "type": "TEXT"  },
-			{ "column": "entityType", "type": "TEXT"  }
+			{ "column": "uTubeId", "type": "TEXT", "constraints": ["PRIMARY KEY"] },
+			{ "column": "name", "type": "TEXT" },
+			{ "column": "entityType", "type": "TEXT" },
+			{ "column": "numVideos", "type": "INTEGER", "constraints": ["DEFAULT 0"] }
 		],
 		"data": [
 			{ "uTubeId": "palm", "name": "Palm", "entityType": "User" },
@@ -14,17 +14,6 @@
 			{ "uTubeId": "enyojs", "name": "EnyoJS", "entityType": "User" },
 			{ "uTubeId": "Gramwebos", "name": "Gram webOS", "entityType": "User" }, 
 			{ "uTubeId": "UCEPktCGUc_bmqvCmX6FC-lA", "name": "webOS Ports", "entityType": "Channel" }
-		]
-	},
-	{
-		"table": "videos",
-		"columns": [
-			{ "column": "rowID", "type": "INTEGER", "constraints": ["PRIMARY KEY"] },
-			{ "column": "entityID", "type": "INTEGER" },
-			{ "column": "videoId", "type": "TEXT" },
-			{ "column": "title", "type": "TEXT" },
-			{ "column": "description", "type": "TEXT" }, 
-			{ "column": "recDel", "type": "TEXT", "constraints": ["DEFAULT 'N'"] }
 		]
 	}
 ]

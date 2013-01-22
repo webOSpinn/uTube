@@ -15,7 +15,8 @@ enyo.kind({
 		},
 		{
 			kind: "YouTubeApi", name: "YouTubeService",
-			onSuccess: "YouTubeAnswer",
+			onGetVideoSuccess: "GetVideosAnswer",
+			onGetVideoCountSuccess: "GetVideoCountAnswer",
 			onFailure: "YouTubeFail"
 		},
 		{kind: "Spinn.AboutDialog", name: "theAboutDialog"},
@@ -51,15 +52,12 @@ enyo.kind({
 				components: [
 					{kind: "VFlexBox",  flex: 1, components: [
 						{kind: "Header", content: "Videos"},
-						{kind: "Scroller", name: "videoListScroller", flex: 1, autoHorizontal: false, horizontal: false,
+						{name: "videoList", kind: "Spinn.SelectableVirtualList", flex:1, onSetupRow: "getVideoItem", onclick: "videoListItemClick", 
+							onAcquirePage: "acquireVideoListPage", pageSize:50, lookAhead:1,
 							components: [
-								{name: "videoList", kind: "Spinn.SelectableVirtualRepeater", onSetupRow: "getVideoItem", onclick: "videoListItemClick",
-									components: [
-										{kind: "SwipeableItem", onConfirm: "doDeleteVideo", layoutKind: "VFlexLayout", tapHighlight: true, components: [
-											{name: "videoName"}
-										]}
-									]
-								}
+								{kind: "Item", layoutKind: "VFlexLayout", tapHighlight: true, components: [
+									{name: "videoName"}
+								]}
 							]
 						},
 						{kind: "Toolbar",
@@ -83,7 +81,7 @@ enyo.kind({
 					{kind: "VFlexBox",  flex: 1, components: [
 						{kind: "Header", content: "Video Player"},
 						{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
-							{kind: "YouTubeViewer", name: "vidViewer", style: "width: 640px; height: 360px;"}
+							{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 						]},
 						{kind: "Toolbar",
 							components: [{
@@ -116,14 +114,14 @@ enyo.kind({
 			}
 		}
 		this.bound = {
-			renderVideos: enyo.bind(this, this.renderVideos),
-			renderYouTubeEntities: enyo.bind(this, this.renderYouTubeEntities)
+			renderYouTubeEntities: enyo.bind(this, this.renderYouTubeEntities),
+			updateVideoCount: enyo.bind(this, this.updateVideoCount)
 		}
+		this.videos = new Object();
 	},
 	create: function () {
 		this.inherited(arguments);
 		enyo.application.model = this.$.model;
-		this.$.model.setVideosUpdatedCallback(this.bound.renderVideos);
 		this.$.model.setYouTubeEntitiesUpdatedCallback(this.bound.renderYouTubeEntities);
 		this.$.model.refreshYouTubeEntities();
 	},
@@ -152,15 +150,27 @@ enyo.kind({
 	},
 	handleNewEntity: function(inSender, inEvent){
 		//this.$.vidViewer.show();
-		//In this case I think refreshing just the entities will be sufficient (instead of refreshItems)
-		this.$.model.insertYouTubeEntity(inEvent.entity, this.$.model.bound.refreshYouTubeEntities);
+		this.$.model.insertYouTubeEntity(inEvent.entity, this.bound.updateVideoCount);
 	},
 	handleCancelNewEntity: function(inSender, inResponse){
 		//this.$.vidViewer.show();
 	},
-	YouTubeAnswer: function (inSender, inResponse){
-		this.videos = inResponse.feed.entry;
+	GetVideosAnswer: function (inSender, inResponse){
+		if(enyo.exists(this.videos)
+			&& enyo.exists(this.videos[inResponse.entity.uTubeId])){
+			this.videos[inResponse.entity.uTubeId] = this.videos[inResponse.entity.uTubeId].concat(inResponse.Videos);
+		} else {
+			this.videos[inResponse.entity.uTubeId] = inResponse.Videos;
+		}
+		
+		this.$.model.updateYouTubeEntity(inResponse.entity.uTubeId, {numVideos: inResponse.entity.numVideos});
 		this.renderVideos();
+	},
+	updateVideoCount: function (data) {
+		this.$.YouTubeService.getVideoCount(data.uTubeId, data.entityType);
+	},
+	GetVideoCountAnswer: function (inSender, inResponse){
+		this.$.model.updateYouTubeEntity(inResponse.uTubeId, {numVideos: inResponse.numVideos});
 	},
 	YouTubeFail: function (inSender, inResponse){/*Do nothing on fail*/},
 	renderYouTubeEntities: function (results) {
@@ -173,7 +183,7 @@ enyo.kind({
 			var r = this.$.model.currentYouTubeEntities[inIndex];
 			if (r) {
 				this.$.entityItem.setCaption(r.name);
-				this.$.entityItem.setCount(r.VidCount);
+				this.$.entityItem.setCount(r.numVideos);
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.uTubeId) {
 					inSender.setItemToSelectOnRender(inIndex, r.uTubeId);
@@ -190,13 +200,15 @@ enyo.kind({
 				var entity = this.$.model.currentYouTubeEntities[inEvent.rowIndex];
 				//Select the clicked item
 				inSender.setSelectedItem(inEvent.rowIndex, entity.uTubeId);
-				
 				this.$.model.currentYouTubeEntity = entity;
-				//**************************TEMP CODE*************************************************
-				this.$.YouTubeService.getJson(entity.uTubeId, entity.entityType);
-				//************************************************************************************this.$.model.refreshVideos();
-				//Scroll the video list back to the top - do it here because we are looking at a different list
-				this.$.videoListScroller.scrollTo(0,0);
+				
+				//Only setup the array the first time the user click the item
+				if(!this.videos[entity.uTubeId]) {
+					this.videos[entity.uTubeId] = new Array();
+				}
+				//These two lines set the list back to the top.  They come from the ScrollingList kind.
+				this.$.videoList.punt();
+				this.$.videoList.reset();
 				//clear the selected video item in the list - as we are looking at a new list
 				this.$.videoList.clearSelection();
 			}
@@ -209,18 +221,38 @@ enyo.kind({
 		//Don't scroll to the top here because this also get triggered when the
 		//list the user it looking at gets refreshed and it is annoying for the user
 		//to have to scroll back down.
-		this.$.videoList.render();
+		this.$.videoList.refresh();
 	},
 	getVideoItem: function(inSender, inIndex) {
-		if(enyo.exists(this.videos)) {
-			var r = this.videos[inIndex];
+		if(enyo.exists(this.videos)
+			&& this.$.model.currentYouTubeEntity
+			&& enyo.exists(this.videos[this.$.model.currentYouTubeEntity.uTubeId])) {
+			
+			var r = this.videos[this.$.model.currentYouTubeEntity.uTubeId][inIndex];
 			if(r) {
-				this.$.videoName.setContent(r.title.$t);
+				this.$.videoName.setContent(r.title);
 				//If the item being rendered is what was selected before, reselect it
-				if(inSender.getSelectedID() == r.link[0].href) {
-					inSender.setItemToSelectOnRender(inIndex, r.link[0].href);
+				if(inSender.getSelectedID() == r.videoId) {
+					inSender.setItemToSelectOnRender(inIndex, r.videoId);
 				}
 				return true;
+			}
+		}
+	},
+	acquireVideoListPage: function(inSender, inPage) {
+		if(enyo.exists(this.$.model.currentYouTubeEntity)) {
+			var index = (Math.abs(inPage) * inSender.pageSize);
+			//If index isn't past max videos...
+			if((index < this.$.model.currentYouTubeEntity.numVideos) || (this.$.model.currentYouTubeEntity.numVideos == 0)) {
+				// if we don't have data for this page...
+				if (!this.videos[this.$.model.currentYouTubeEntity.uTubeId][index]) {
+					if(this.$.YouTubeService.getVideosRunning() == false) {
+						// get it from a service
+						this.$.YouTubeService.getVideos(this.$.model.currentYouTubeEntity.uTubeId, this.$.model.currentYouTubeEntity.entityType, (index + 1));
+					} else {
+						console.log("Get Videos already running!");
+					}
+				}
 			}
 		}
 	},
@@ -229,27 +261,12 @@ enyo.kind({
 		if(enyo.exists(inEvent.rowIndex)) {
 			//Only do selection if the user has selected a different video
 			if(inSender.getSelectedIndex() != inEvent.rowIndex) {
-				var vid = this.videos[inEvent.rowIndex]
+				var vid = this.videos[this.$.model.currentYouTubeEntity.uTubeId][inEvent.rowIndex]
 				//Select the clicked item
-				inSender.setSelectedItem(inEvent.rowIndex, vid.link[0].href);
-				
-				var videoId = "";
-				
-				switch(this.$.model.currentYouTubeEntity.entityType)
-				{
-					case "User":
-					case "Channel":
-						videoId = vid.link[0].href.replace('http://www.youtube.com/watch?v=','');
-						videoId = videoId.replace('&feature=youtube_gdata','');
-						break;
-					case "Playlist":
-						videoId = vid.link[1].href.replace('http://www.youtube.com/watch?v=','');
-						videoId = videoId.replace('&feature=youtube_gdata','');
-						break;
-					default:
-				}
-				console.log("VideoId: " + videoId);
-				this.$.vidViewer.setVideoId(videoId);
+				inSender.setSelectedItem(inEvent.rowIndex, vid.videoId);
+
+				console.log("VideoId: " + vid.videoId);
+				this.$.vidViewer.setVideoId(vid.videoId);
 			}
 			
 			//Always go to the video pane on a phone
