@@ -1,7 +1,7 @@
 enyo.kind({
-	name: "AddEntityDialog",
+	name: "AddEditEntityDialog",
 	kind: enyo.ModalDialog,
-	className: "enyo-popup enyo-modaldialog addEntityDialog",
+	className: "enyo-popup enyo-modaldialog addEditEntityDialog",
 	layoutKind: "VFlexLayout",
 	contentHeight:"100%", height:"90%", style: "max-height: 395px;",
 	events: {
@@ -13,10 +13,10 @@ enyo.kind({
 		{kind: "Scroller", name:"theScroller", flex: 1, autoHorizontal: false, horizontal: false,
 			components: [
 				{kind: "RowGroup", caption: "YouTube ID:", components: [
-					{name: "uTubeId", kind: "Input", hint:"YouTube user or channel ID", onchange: "uTubeIdChanged"}
+					{name: "uTubeId", kind: "Input", hint:"YouTube user or channel ID", autocorrect: false, onchange: "uTubeIdChanged"}
 				]},
 				{kind: "RowGroup", caption: "Name:", components: [
-					{name: "name", kind: "Input", hint:"Enter display name"}
+					{name: "name", kind: "Input", autocorrect: false, hint:"Enter display name"}
 				]},
 				{kind: "RowGroup", caption: "Type:", components: [
 					{
@@ -32,11 +32,19 @@ enyo.kind({
 	constructor: function () {
 		this.inherited(arguments);
 	},
-	openAtCenter: function () {
+	openAtCenter: function (entity) {
 		this.inherited(arguments);
 		
 		this.$.theScroller.scrollTo(0,0);
 		this.clearFields();
+		this._mode = "Add";
+		
+		if(enyo.exists(entity)) {
+			this.$.uTubeId.setValue(entity.uTubeId),
+			this.$.name.setValue(entity.name),
+			this.$.typePicker.setValue(entity.entityType)
+			this.$.uTubeId.setDisabled(true);
+		}
 	},
 	uTubeIdChanged: function (inSender, inEvent) {
 		//Don't want to overwrite something if the user has already supplied input
@@ -52,7 +60,16 @@ enyo.kind({
 				entityType: this.$.typePicker.getValue()
 			}
 			
-			this.doSave({entity: entity});
+			var mode;
+			
+			//If the uTubeId field is disabled then we are in edit mode
+			if(this.$.uTubeId.getDisabled() == true) {
+				mode = "Edit";
+			} else {
+				mode = "Add";
+			}
+			
+			this.doSave({mode: mode, entity: entity});
 			this.close()
 		}
 	},
@@ -64,6 +81,7 @@ enyo.kind({
 		this.$.uTubeId.setValue("");
 		this.$.name.setValue("");
 		this.$.typePicker.setValue("User");
+		this.$.uTubeId.setDisabled(false);
 	},
 	validateFields: function() {
 		var temp = "";

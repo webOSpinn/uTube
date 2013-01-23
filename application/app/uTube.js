@@ -20,8 +20,8 @@ enyo.kind({
 			onFailure: "YouTubeFail"
 		},
 		{kind: "Spinn.AboutDialog", name: "theAboutDialog"},
-		{kind: "AddEntityDialog", name: "addEntityDialog",
-			onSave: "handleNewEntity", onCancel: "handleCancelNewEntity"},
+		{kind: "AddEditEntityDialog", name: "addEditEntityDialog",
+			onSave: "handleNewOrUpdateEntity", onCancel: "handleCancelNewOrUpdateEntity"},
 		{name: "appMenu", kind: "AppMenu", components: [
 			{name: "about", caption: "About", onclick: "btnAbout_Click"}
 		]},
@@ -33,7 +33,7 @@ enyo.kind({
 						components: [
 							{name: "entityList", kind: "Spinn.SelectableVirtualRepeater", onSetupRow: "getEntityItem", onclick: "entityListItemClick",
 								components: [
-									{kind: "Spinn.CountableItem", name: "entityItem"}
+									{kind: "Spinn.CountableItem", name: "entityItem", swipeable: true, onConfirm: "doDeleteEntity"}
 								]
 							}
 						]
@@ -42,8 +42,14 @@ enyo.kind({
 						components: [{
 							name: "newButton",
 							kind: "ToolButton",
-							icon: "./images/menu-icon-new.png",
+							icon: enyo.fetchAppRootPath() + "images/menu-icon-new.png",
 							onclick: "addNewEntity"
+						},
+						{
+							kind: "ToolButton",
+							name: "editButton",
+							icon: enyo.fetchAppRootPath() + "images/menu-icon-edit.png",
+							onclick: "editEntity"
 						}]
 					}
 				]}
@@ -66,10 +72,10 @@ enyo.kind({
 								kind: "GrabButton"
 							},
 							{
-								name: "syncButton",
+								name: "refreshButton",
 								kind: "ToolButton",
 								icon: "./images/menu-icon-sync.png",
-								onclick: "syncClick"
+								onclick: "refreshVideoList_click"
 							}]
 						}
 					]}
@@ -146,14 +152,28 @@ enyo.kind({
 	},
 	addNewEntity: function(inSender, inResponse){
 		//this.$.vidViewer.hide();
-		this.$.addEntityDialog.openAtCenter();
+		this.$.addEditEntityDialog.openAtCenter();
 	},
-	handleNewEntity: function(inSender, inEvent){
-		//this.$.vidViewer.show();
-		this.$.model.insertYouTubeEntity(inEvent.entity, this.bound.updateVideoCount);
+	editEntity: function(inSender, inResponse){
+		if(enyo.exists(this.$.model.currentYouTubeEntity)){
+			this.$.addEditEntityDialog.openAtCenter(this.$.model.currentYouTubeEntity);
+		}
 	},
-	handleCancelNewEntity: function(inSender, inResponse){
+	handleNewOrUpdateEntity: function(inSender, inEvent){
 		//this.$.vidViewer.show();
+		if(inEvent.mode == "Add") {
+			this.$.model.insertYouTubeEntity(inEvent.entity, this.bound.updateVideoCount);
+		} else {
+			this.$.model.updateYouTubeEntity(inEvent.entity.uTubeId, inEvent.entity, this.bound.updateVideoCount);
+		}
+	},
+	handleCancelNewOrUpdateEntity: function(inSender, inResponse){
+		//this.$.vidViewer.show();
+	},
+	refreshVideoList_click: function(inSender, inResponse){
+		if(enyo.exists(this.$.model.currentYouTubeEntity)){
+			this.refreshVideoList(this.$.model.currentYouTubeEntity);
+		}
 	},
 	GetVideosAnswer: function (inSender, inResponse){
 		if(enyo.exists(this.videos)
@@ -202,20 +222,46 @@ enyo.kind({
 				inSender.setSelectedItem(inEvent.rowIndex, entity.uTubeId);
 				this.$.model.currentYouTubeEntity = entity;
 				
-				//Only setup the array the first time the user click the item
-				if(!this.videos[entity.uTubeId]) {
-					this.videos[entity.uTubeId] = new Array();
-				}
-				//These two lines set the list back to the top.  They come from the ScrollingList kind.
-				this.$.videoList.punt();
-				this.$.videoList.reset();
-				//clear the selected video item in the list - as we are looking at a new list
-				this.$.videoList.clearSelection();
+				this.refreshVideoList(entity);
 			}
 			//Always go to the video list pane on a phone
 			if(enyo.isPhone())
 			{ this.$.slidingPane.selectView(this.$.videosPane); }
 		}
+	},
+	refreshVideoList: function(entity) {
+		if(enyo.exists(entity)){
+			//Only setup the array the first time the user click the item
+			if(!this.videos[entity.uTubeId]) {
+				this.videos[entity.uTubeId] = new Array();
+			}
+			//These two lines set the list back to the top.  They come from the ScrollingList kind.
+			this.$.videoList.punt();
+			this.$.videoList.reset();
+			//clear the selected video item in the list - as we are looking at a new list
+			this.$.videoList.clearSelection();
+		}
+	},
+	doDeleteEntity: function(inSender, inIndex) {
+		/*var viewedVideo = this.$.vidViewer.getVideoId()
+		
+		//If deleting the selected entity clear the video list
+		if(enyo.exists(viewedVideo)) {
+			if(viewedVideo.rowID == this.$.model.currentLocations[inIndex].rowID) {
+				if(enyo.exists(this.videos)
+					&& enyo.exists(this.videos[inResponse.entity.uTubeId])){
+					delete this.videos[inResponse.entity.uTubeId];
+				}
+				//clear the selected location item in the list - as we have deleted the selected location
+				this.$.locationList.clearSelection();
+			}
+		}
+		//If this is the last location in a category being deleted - clear the category selection
+		if(this.$.model.currentLocations.length == 1) {
+			this.$.categoryList.clearSelection();
+		}
+		
+		this.$.model.deleteLocation(this.$.model.currentLocations[inIndex].rowID, undefined);*/
 	},
 	renderVideos: function (results) {
 		//Don't scroll to the top here because this also get triggered when the
