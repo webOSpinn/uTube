@@ -17,6 +17,7 @@ enyo.kind({
 			kind: "YouTubeApi", name: "YouTubeService",
 			onGetVideoSuccess: "GetVideosAnswer",
 			onGetVideoCountSuccess: "GetVideoCountAnswer",
+			onGetVideoDetailsSuccess: "GetVideoDetailsAnswer",
 			onFailure: "YouTubeFail"
 		},
 		{kind: "Spinn.AboutDialog", name: "theAboutDialog"},
@@ -74,7 +75,7 @@ enyo.kind({
 							{
 								name: "refreshButton",
 								kind: "ToolButton",
-								icon: "./images/menu-icon-sync.png",
+								icon: enyo.fetchAppRootPath() + "images/menu-icon-sync.png",
 								onclick: "refreshVideoList_click"
 							}]
 						}
@@ -86,9 +87,14 @@ enyo.kind({
 				components: [
 					{kind: "VFlexBox",  flex: 1, components: [
 						{kind: "Header", content: "Video Player"},
-						{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
+						{kind: "Scroller", name:"detailScroller", flex: 1, autoHorizontal: false, horizontal: false, 
+							components: [
+								{kind: "YouTubeVideoDetails", name: "videoDetails"}
+							]
+						},
+						/*{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
 							{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
-						]},
+						]},*/
 						{kind: "Toolbar",
 							components: [{
 								name: "fullscreenButton3",
@@ -97,7 +103,7 @@ enyo.kind({
 							{
 								name: "shareButton",
 								kind: "ToolButton",
-								icon: "./images/menu-icon-share.png",
+								icon: enyo.fetchAppRootPath() + "images/menu-icon-share.png",
 								onclick: "btnShare_Click"
 							}]
 						}
@@ -191,6 +197,33 @@ enyo.kind({
 	},
 	GetVideoCountAnswer: function (inSender, inResponse){
 		this.$.model.updateYouTubeEntity(inResponse.uTubeId, {numVideos: inResponse.numVideos});
+	},
+	GetVideoDetailsAnswer: function (inSender, inResponse){
+		this.$.videoDetails.clear();
+		if(enyo.exists(inResponse.videoDetails)) {
+			if(enyo.exists(inResponse.videoDetails.DateUploaded)) {
+				this.$.videoDetails.setDateUploaded(inResponse.videoDetails.DateUploaded);
+			}
+			if(enyo.exists(inResponse.videoDetails.Description)) {
+				this.$.videoDetails.setDescription(inResponse.videoDetails.Description);
+			}
+			if(enyo.exists(inResponse.videoDetails.Duration)) {
+				this.$.videoDetails.setDuration(inResponse.videoDetails.Duration);
+			}
+			if(enyo.exists(inResponse.videoDetails.NumDislikes)) {
+				this.$.videoDetails.setNumDislikes(inResponse.videoDetails.NumDislikes);
+			}
+			if(enyo.exists(inResponse.videoDetails.NumLikes)) {
+				this.$.videoDetails.setNumLikes(inResponse.videoDetails.NumLikes);
+			}
+			if(enyo.exists(inResponse.videoDetails.NumViews)) {
+				this.$.videoDetails.setNumViews(inResponse.videoDetails.NumViews);
+			}
+			if(enyo.exists(inResponse.videoDetails.Title)) {
+				this.$.videoDetails.setTitle(inResponse.videoDetails.Title);
+			}
+		}
+		this.$.videoDetails.setVideoId(inResponse.uTubeId);
 	},
 	YouTubeFail: function (inSender, inResponse){/*Do nothing on fail*/},
 	renderYouTubeEntities: function (results) {
@@ -312,7 +345,8 @@ enyo.kind({
 				inSender.setSelectedItem(inEvent.rowIndex, vid.videoId);
 
 				console.log("VideoId: " + vid.videoId);
-				this.$.vidViewer.setVideoId(vid.videoId);
+				this.$.YouTubeService.getVideoDetails(vid.videoId);
+				//this.$.videoDetails.setVideoId(vid.videoId);
 			}
 			
 			//Always go to the video pane on a phone
