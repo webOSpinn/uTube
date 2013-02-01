@@ -163,7 +163,7 @@ enyo.kind({
 			&& enyo.exists(inResponse.feed)
 			&& enyo.exists(inResponse.feed.openSearch$totalResults)
 			&& enyo.exists(inResponse.feed.openSearch$totalResults.$t)) {
-			
+						
 			this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: inResponse.feed.openSearch$totalResults.$t});
 			this._CleanupGetVideoCountVars();
 		} else {

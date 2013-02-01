@@ -13,7 +13,7 @@ enyo.kind({
 	},
 	components:[
 		{name: "title", content: ""},
-		{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
+		{kind: "HFlexBox", align:"center", pack:"center", components: [
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 		]},
 		{name: "numViews", content: ""},

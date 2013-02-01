@@ -138,7 +138,7 @@ enyo.kind({
 			onSuccess: enyo.bind(this, this._deleteYouTubeEntityFinish, id, callBack)
 		})
 	},
-	_deleteYouTubeEntityFinish: function (callBack) {
+	_deleteYouTubeEntityFinish: function (id, callBack) {
 		this.refreshYouTubeEntities();
 		if (enyo.exists(callBack)) {
 			callBack()

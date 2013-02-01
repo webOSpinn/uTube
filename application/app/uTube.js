@@ -92,9 +92,6 @@ enyo.kind({
 								{kind: "YouTubeVideoDetails", name: "videoDetails"}
 							]
 						},
-						/*{kind: "HFlexBox", flex: 1, align:"center", pack:"center", components: [
-							{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
-						]},*/
 						{kind: "Toolbar",
 							components: [{
 								name: "fullscreenButton3",
@@ -226,7 +223,7 @@ enyo.kind({
 		this.$.videoDetails.setVideoId(inResponse.uTubeId);
 	},
 	YouTubeFail: function (inSender, inResponse){/*Do nothing on fail*/},
-	renderYouTubeEntities: function (results) {
+	renderYouTubeEntities: function () {
 		//Scroll the entity list back to the top
 		this.$.entityListScroller.scrollTo(0,0);
 		this.$.entityList.render();
@@ -268,33 +265,39 @@ enyo.kind({
 			if(!this.videos[entity.uTubeId]) {
 				this.videos[entity.uTubeId] = new Array();
 			}
-			//These two lines set the list back to the top.  They come from the ScrollingList kind.
-			this.$.videoList.punt();
-			this.$.videoList.reset();
-			//clear the selected video item in the list - as we are looking at a new list
-			this.$.videoList.clearSelection();
 		}
+		//These two lines set the list back to the top.  They come from the ScrollingList kind.
+		this.$.videoList.punt();
+		this.$.videoList.reset();
+		//clear the selected video item in the list - as we are looking at a new list
+		this.$.videoList.clearSelection();
+		
 	},
 	doDeleteEntity: function(inSender, inIndex) {
-		/*var viewedVideo = this.$.vidViewer.getVideoId()
-		
-		//If deleting the selected entity clear the video list
-		if(enyo.exists(viewedVideo)) {
-			if(viewedVideo.rowID == this.$.model.currentLocations[inIndex].rowID) {
-				if(enyo.exists(this.videos)
-					&& enyo.exists(this.videos[inResponse.entity.uTubeId])){
-					delete this.videos[inResponse.entity.uTubeId];
-				}
-				//clear the selected location item in the list - as we have deleted the selected location
-				this.$.locationList.clearSelection();
+		if(enyo.exists(this.$.model.currentYouTubeEntities)) {
+			var entityToDelete = this.$.model.currentYouTubeEntities[inIndex];
+			
+			//Delete the videos from the list
+			if(enyo.exists(this.videos)
+				&& enyo.exists(this.videos[entityToDelete.uTubeId])){
+				delete this.videos[entityToDelete.uTubeId];
 			}
-		}
-		//If this is the last location in a category being deleted - clear the category selection
-		if(this.$.model.currentLocations.length == 1) {
-			this.$.categoryList.clearSelection();
+			
+			//clear the selected entity item in the list - as we have deleted the selected entity
+			if(this.$.entityList.getSelectedID() == entityToDelete.uTubeId) {
+				this.$.entityList.clearSelection();
+				
+				//Clear the current entity
+				this.$.model.currentYouTubeEntity = undefined;
+				
+				//Clear the video list
+				this.refreshVideoList();
+			}
+			
+			this.$.model.deleteYouTubeEntity(entityToDelete.uTubeId);
 		}
 		
-		this.$.model.deleteLocation(this.$.model.currentLocations[inIndex].rowID, undefined);*/
+		
 	},
 	renderVideos: function (results) {
 		//Don't scroll to the top here because this also get triggered when the
@@ -304,7 +307,7 @@ enyo.kind({
 	},
 	getVideoItem: function(inSender, inIndex) {
 		if(enyo.exists(this.videos)
-			&& this.$.model.currentYouTubeEntity
+			&& enyo.exists(this.$.model.currentYouTubeEntity)
 			&& enyo.exists(this.videos[this.$.model.currentYouTubeEntity.uTubeId])) {
 			
 			var r = this.videos[this.$.model.currentYouTubeEntity.uTubeId][inIndex];
