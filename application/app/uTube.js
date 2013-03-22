@@ -193,7 +193,10 @@ enyo.kind({
 		this.$.YouTubeService.getVideoCount(data.uTubeId, data.entityType);
 	},
 	GetVideoCountAnswer: function (inSender, inResponse){
-		this.$.model.updateYouTubeEntity(inResponse.uTubeId, {numVideos: inResponse.numVideos});
+		//If -1 is returned there is an error
+		if (inResponse.numVideos > -1) {
+			this.$.model.updateYouTubeEntity(inResponse.uTubeId, {numVideos: inResponse.numVideos});
+		}
 	},
 	GetVideoDetailsAnswer: function (inSender, inResponse){
 		this.$.videoDetails.clear();
@@ -205,7 +208,8 @@ enyo.kind({
 				this.$.videoDetails.setDescription(inResponse.videoDetails.Description);
 			}
 			if(enyo.exists(inResponse.videoDetails.Duration)) {
-				this.$.videoDetails.setDuration(inResponse.videoDetails.Duration);
+				var time = Utils.secondsToTime(inResponse.videoDetails.Duration)
+				this.$.videoDetails.setDuration((Utils.zeroPad(time.h,2) + ":" + Utils.zeroPad(time.m,2) + ":" + Utils.zeroPad(time.s,2)));
 			}
 			if(enyo.exists(inResponse.videoDetails.NumDislikes)) {
 				this.$.videoDetails.setNumDislikes(inResponse.videoDetails.NumDislikes);

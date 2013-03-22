@@ -116,19 +116,28 @@ enyo.kind({
 			
 			//If I have retrieved less than 50 videos I know that I am at the end, otherwise request the next 50 videos
 			//if(tempResults.length < 50) {
-				this.doGetVideoSuccess({Videos: this._processedVideos, entity:{uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: this._GetVideos_VideoCount}});
-				this._CleanupGetVideosVars();
+				try {
+					this.doGetVideoSuccess({Videos: this._processedVideos, entity:{uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: this._GetVideos_VideoCount}});
+				} finally {
+					this._CleanupGetVideosVars();
+				}
 			//} else {
 			//	this.getVideos(this._GetVideos_UserOrChannelOrPlaylistId, this._GetVideos_EntityType, (this._GetVideos_StartIndex + 50));
 			//}
 		} else { //Return empty array
-			this.doGetVideoSuccess({Videos: this._processedVideos, entity: {uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: 0}});
-			this._CleanupGetVideosVars();
+			try {
+				this.doGetVideoSuccess({Videos: this._processedVideos, entity: {uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: 0}});
+			} finally {
+				this._CleanupGetVideosVars();
+			}
 		}
     },
 	_GetVideosFail: function (inSender, inResponse) {
-		this.doFailure({response: inResponse, source: "GetVideoFail"});
-		this._CleanupGetVideosVars();
+		try {
+			this.doFailure({response: inResponse, source: "GetVideoFail"});
+		} finally {
+			this._CleanupGetVideosVars();
+		}
 	},
 	_CleanupGetVideosVars: function() {
 		this._processedVideos = null;
@@ -159,21 +168,26 @@ enyo.kind({
         this.$.GetVideoCountWebService.call();
 	},
 	_GetVideoCountAnswer: function (inSender, inResponse) {
-		if(enyo.exists(inResponse)
-			&& enyo.exists(inResponse.feed)
-			&& enyo.exists(inResponse.feed.openSearch$totalResults)
-			&& enyo.exists(inResponse.feed.openSearch$totalResults.$t)) {
-						
-			this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: inResponse.feed.openSearch$totalResults.$t});
-			this._CleanupGetVideoCountVars();
-		} else {
-			this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: 0});
+		try {
+			if(enyo.exists(inResponse)
+				&& enyo.exists(inResponse.feed)
+				&& enyo.exists(inResponse.feed.openSearch$totalResults)
+				&& enyo.exists(inResponse.feed.openSearch$totalResults.$t)) {
+				
+				this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: inResponse.feed.openSearch$totalResults.$t});
+			} else {
+				this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: -1});
+			}
+		} finally {
 			this._CleanupGetVideoCountVars();
 		}
 	},
 	_GetVideoCountFail: function (inSender, inResponse) {
-		this.doFailure({response: inResponse, source: "GetVideoCountFail"});
-		this._CleanupGetVideoCountVars();
+		try {
+			this.doFailure({response: inResponse, source: "GetVideoCountFail"});
+		} finally {
+			this._CleanupGetVideoCountVars();
+		}		
 	},
 	_CleanupGetVideoCountVars: function() {
 		this._GetVideoCount_UserOrChannelOrPlaylistId = null;
@@ -188,66 +202,71 @@ enyo.kind({
         this.$.GetVideoDetailsWebService.call();
 	},
 	_GetVideoDetailsAnswer: function (inSender, inResponse) {
-		//If the start index is out of bounds no entries will be returned
-		if(enyo.exists(inResponse)
-			&& enyo.exists(inResponse.entry)) {
-			
-			var videoDetails = new Object();
-			
-			//Extract the video title
-			if(enyo.exists(inResponse.entry.title)
-				&& enyo.exists(inResponse.entry.title.$t)) {
-				videoDetails.Title = inResponse.entry.title.$t;
-			}
-			
-			if(enyo.exists(inResponse.entry.media$group)) {
-				//Extract the description
-				if(enyo.exists(inResponse.entry.media$group.media$description)
-					&& enyo.exists(inResponse.entry.media$group.media$description.$t)) {
-					videoDetails.Description = inResponse.entry.media$group.media$description.$t;
+		try {
+			//If the start index is out of bounds no entries will be returned
+			if(enyo.exists(inResponse)
+				&& enyo.exists(inResponse.entry)) {
+				
+				var videoDetails = new Object();
+				
+				//Extract the video title
+				if(enyo.exists(inResponse.entry.title)
+					&& enyo.exists(inResponse.entry.title.$t)) {
+					videoDetails.Title = inResponse.entry.title.$t;
 				}
 				
-				//Extract the duration (in seconds)
-				if(enyo.exists(inResponse.entry.media$group.yt$duration)
-					&& enyo.exists(inResponse.entry.media$group.yt$duration.seconds)) {
-					videoDetails.Duration = inResponse.entry.media$group.yt$duration.seconds;
+				if(enyo.exists(inResponse.entry.media$group)) {
+					//Extract the description
+					if(enyo.exists(inResponse.entry.media$group.media$description)
+						&& enyo.exists(inResponse.entry.media$group.media$description.$t)) {
+						videoDetails.Description = inResponse.entry.media$group.media$description.$t;
+					}
+					
+					//Extract the duration (in seconds)
+					if(enyo.exists(inResponse.entry.media$group.yt$duration)
+						&& enyo.exists(inResponse.entry.media$group.yt$duration.seconds)) {
+						videoDetails.Duration = inResponse.entry.media$group.yt$duration.seconds;
+					}
+					
+					//Extract the date uploaded
+					if(enyo.exists(inResponse.entry.media$group.yt$uploaded)
+						&& enyo.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
+						videoDetails.DateUploaded = inResponse.entry.media$group.yt$uploaded.$t;
+					}
 				}
 				
-				//Extract the date uploaded
-				if(enyo.exists(inResponse.entry.media$group.yt$uploaded)
-					&& enyo.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
-					videoDetails.DateUploaded = inResponse.entry.media$group.yt$uploaded.$t;
-				}
-			}
-			
-			//Extract number of views
-			if(enyo.exists(inResponse.entry.yt$statistics)
-				&& enyo.exists(inResponse.entry.yt$statistics.viewCount)) {
-				videoDetails.NumViews = inResponse.entry.yt$statistics.viewCount;
-			}
-			
-			if(enyo.exists(inResponse.entry.yt$rating)) {
-				//Extract num likes
-				if(enyo.exists(inResponse.entry.yt$rating.numLikes)) {
-					videoDetails.NumLikes = inResponse.entry.yt$rating.numLikes;
+				//Extract number of views
+				if(enyo.exists(inResponse.entry.yt$statistics)
+					&& enyo.exists(inResponse.entry.yt$statistics.viewCount)) {
+					videoDetails.NumViews = inResponse.entry.yt$statistics.viewCount;
 				}
 				
-				//Extract num dislikes
-				if(enyo.exists(inResponse.entry.yt$rating.numDislikes)) {
-					videoDetails.NumDislikes = inResponse.entry.yt$rating.numDislikes;
+				if(enyo.exists(inResponse.entry.yt$rating)) {
+					//Extract num likes
+					if(enyo.exists(inResponse.entry.yt$rating.numLikes)) {
+						videoDetails.NumLikes = inResponse.entry.yt$rating.numLikes;
+					}
+					
+					//Extract num dislikes
+					if(enyo.exists(inResponse.entry.yt$rating.numDislikes)) {
+						videoDetails.NumDislikes = inResponse.entry.yt$rating.numDislikes;
+					}
 				}
-			}
 
-			this.doGetVideoDetailsSuccess({videoDetails: videoDetails, uTubeId: this._GetVideoDetails_UserOrChannelOrPlaylistId});
-			this._CleanupGetVideosVars();			
-		}else{ //Return empty results
-			this.doGetVideoDetailsSuccess({videoDetails: null, uTubeId: this._GetVideoDetails_UserOrChannelOrPlaylistId});
-			this._CleanupGetVideosVars();
+				this.doGetVideoDetailsSuccess({videoDetails: videoDetails, uTubeId: this._GetVideoDetails_UserOrChannelOrPlaylistId});
+			}else{ //Return empty results
+				this.doGetVideoDetailsSuccess({videoDetails: null, uTubeId: this._GetVideoDetails_UserOrChannelOrPlaylistId});
+			}
+		} finally {
+			this._CleanupGetVideoDetailsVars();
 		}
 	},
 	_GetVideoDetailsFail: function (inSender, inResponse) {
-		this.doFailure({response: inResponse, source: "GetVideoDetailsFail"});
-		this._CleanupGetVideoDetailsVars();
+		try {
+			this.doFailure({response: inResponse, source: "GetVideoDetailsFail"});
+		} finally {
+			this._CleanupGetVideoDetailsVars();
+		}
 	},
 	_CleanupGetVideoDetailsVars: function() {
 		this._GetVideoDetails_UserOrChannelOrPlaylistId = null;

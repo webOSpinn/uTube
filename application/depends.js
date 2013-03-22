@@ -1,5 +1,6 @@
 enyo.depends(
 	"Spinn/depends.js",
+	"app/Utils.js",
 	"app/database-enyo.js",
 	"app/YouTube-model.js",
 	"app/YouTubeApi.js",
