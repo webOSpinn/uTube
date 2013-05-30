@@ -4,7 +4,7 @@ enyo.kind({
 	published: {
 		dateUploaded: "",
 		description: "",
-		duration: "",
+		durationInSeconds: "",
 		numDislikes: "",
 		numLikes: "",
 		numViews: "",
@@ -16,6 +16,7 @@ enyo.kind({
 		{kind: "HFlexBox", align:"center", pack:"center", components: [
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 		]},
+		{kind: "TimeLine", name: "VideoTimeLine", maximum: 0, onChange: "timeLineChange"},
 		{name: "numViews", content: ""},
 		{name: "numLikes", content: ""},
 		{name: "numDislikes", content: ""},
@@ -28,7 +29,7 @@ enyo.kind({
 		
 		this.dateUploadedChanged();
 		this.descriptionChanged();
-		this.durationChanged();
+		this.durationInSecondsChanged();
 		this.numDislikesChanged();
 		this.numLikesChanged();
 		this.numViewsChanged();
@@ -41,8 +42,17 @@ enyo.kind({
 	descriptionChanged: function() {
 		this.$.description.setContent(this.description);
 	},
-	durationChanged: function() {
-		this.$.duration.setContent("Duration: " + this.duration);
+	durationInSecondsChanged: function() {
+		this.$.VideoTimeLine.setPosition(0);
+		
+		if(this.durationInSeconds == "" ) {
+			this.$.VideoTimeLine.setMaximum(0);
+			this.$.duration.setContent("Duration: ");
+		} else {
+			this.$.VideoTimeLine.setMaximum(this.durationInSeconds);
+			var time = Utils.secondsToTime(this.durationInSeconds);
+			this.$.duration.setContent("Duration: " + (Utils.zeroPad(time.h,2) + ":" + Utils.zeroPad(time.m,2) + ":" + Utils.zeroPad(time.s,2)));
+		}
 	},
 	numDislikesChanged: function() {
 		this.$.numDislikes.setContent("Num Dislikes: " + this.numDislikes);
@@ -59,13 +69,26 @@ enyo.kind({
 	videoIdChanged: function() {
 		this.$.vidViewer.setVideoId(this.getVideoId());
 	},
+	getVideoUrl: function() {
+		//If no video is selected just go to main YouTube page
+		if(enyo.exists(this.getVideoId())) {
+			var time = this.$.VideoTimeLine.getTime();
+			return "http://www.youtube.com/watch?v=" + this.getVideoId() + "#t=" + time.h + "h" + time.m + "m" + time.s + "s";
+		} else {
+			return "http://www.youtube.com/";
+		}
+	},
 	clear: function() {
-		this.$.dateUploaded.setContent("");
-		this.$.description.setContent("");
-		this.$.duration.setContent("");
-		this.$.numDislikes.setContent("");
-		this.$.numLikes.setContent("");
-		this.$.numViews.setContent("");
-		this.$.title.setContent("");
+		this.setDateUploaded("");
+		this.setDescription("");
+		this.setDurationInSeconds("");
+		this.setNumDislikes("");
+		this.setNumLikes("");
+		this.setNumViews("");
+		this.setTitle("");
+		//this.setVideoId("");
+	},
+	timeLineChange: function (inSender, position) {
+		this.$.vidViewer.setStartTimeInSeconds(position);
 	}
 })

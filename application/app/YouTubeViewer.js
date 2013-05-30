@@ -5,7 +5,8 @@ enyo.kind({
 		https: false,
 		privacyEnhancedMode: false,
 		showSuggestedVideos: true,
-		videoId: ""
+		videoId: "",
+		startTimeInSeconds: 0
 	},
 	components:[
 	{
@@ -26,11 +27,14 @@ enyo.kind({
 		this.renderVideo();
 	},
 	videoIdChanged: function() {
+		this.startTimeInSeconds = 0; //Reset the start time for a new video
+		this.renderVideo();
+	},
+	startTimeInSecondsChanged: function() {
 		this.renderVideo();
 	},
 	renderVideo: function() {
 		var vidUrl = ''
-		
 		//Make sure that there is a video name supplied
 		if(enyo.exists(this.videoId)) {
 			var temp = enyo.string.trim(this.videoId);
@@ -47,9 +51,11 @@ enyo.kind({
 				if(this.showSuggestedVideos == false){
 					vidUrl = vidUrl + '?rel=0'
 				}
+				vidUrl = vidUrl + '#t=' + this.startTimeInSeconds + 's'
 			}
 		}
 		console.log("URL: " + vidUrl);
 		this.$.WV.setUrl(vidUrl);
+		this.$.WV.reloadPage();
 	}
 })

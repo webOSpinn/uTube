@@ -143,18 +143,15 @@ enyo.kind({
 		this.$.theAboutDialog.openAtCenter();
 	},
 	btnShare_Click: function(inSender) {
-		//Only show the webpage if the user is currently viewing a video
-		if(enyo.exists(this.$.vidViewer.getVideoId())) {
-			this.$.openApp.call({
-				"id": "com.palm.app.browser", 
-				"params": {
-					"target": "http://www.youtube.com/watch?v=" + this.$.vidViewer.getVideoId()
-				}
-			});
-		}
+		this.$.openApp.call({
+			"id": "com.palm.app.browser", 
+			"params": {
+				"target": this.$.videoDetails.getVideoUrl()
+			}
+		});
 	},
 	addNewEntity: function(inSender, inResponse){
-		//this.$.vidViewer.hide();
+		//this.$.videoDetails.hide();
 		this.$.addEditEntityDialog.openAtCenter();
 	},
 	editEntity: function(inSender, inResponse){
@@ -163,7 +160,7 @@ enyo.kind({
 		}
 	},
 	handleNewOrUpdateEntity: function(inSender, inEvent){
-		//this.$.vidViewer.show();
+		//this.$.videoDetails.show();
 		if(inEvent.mode == "Add") {
 			this.$.model.insertYouTubeEntity(inEvent.entity, this.bound.updateVideoCount);
 		} else {
@@ -171,7 +168,7 @@ enyo.kind({
 		}
 	},
 	handleCancelNewOrUpdateEntity: function(inSender, inResponse){
-		//this.$.vidViewer.show();
+		//this.$.videoDetails.show();
 	},
 	refreshVideoList_click: function(inSender, inResponse){
 		if(enyo.exists(this.$.model.currentYouTubeEntity)){
@@ -208,8 +205,7 @@ enyo.kind({
 				this.$.videoDetails.setDescription(inResponse.videoDetails.Description);
 			}
 			if(enyo.exists(inResponse.videoDetails.Duration)) {
-				var time = Utils.secondsToTime(inResponse.videoDetails.Duration)
-				this.$.videoDetails.setDuration((Utils.zeroPad(time.h,2) + ":" + Utils.zeroPad(time.m,2) + ":" + Utils.zeroPad(time.s,2)));
+				this.$.videoDetails.setDurationInSeconds(inResponse.videoDetails.Duration);
 			}
 			if(enyo.exists(inResponse.videoDetails.NumDislikes)) {
 				this.$.videoDetails.setNumDislikes(inResponse.videoDetails.NumDislikes);
