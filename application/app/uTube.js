@@ -172,6 +172,8 @@ enyo.kind({
 	},
 	refreshVideoList_click: function(inSender, inResponse){
 		if(enyo.exists(this.$.model.currentYouTubeEntity)){
+			//Clear the array of videos so we load a new one
+			this.videos[this.$.model.currentYouTubeEntity.uTubeId] = new Array();
 			this.refreshVideoList(this.$.model.currentYouTubeEntity);
 		}
 	},
@@ -225,7 +227,7 @@ enyo.kind({
 	YouTubeFail: function (inSender, inResponse){/*Do nothing on fail*/},
 	renderYouTubeEntities: function () {
 		//Scroll the entity list back to the top
-		this.$.entityListScroller.scrollTo(0,0);
+		//this.$.entityListScroller.scrollTo(0,0);
 		this.$.entityList.render();
 	},
 	getEntityItem: function(inSender, inIndex) {
@@ -236,6 +238,7 @@ enyo.kind({
 				this.$.entityItem.setCount(r.numVideos);
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.uTubeId) {
+					this.$.model.currentYouTubeEntity = r; //This needs to be updated here to keep the data in sync
 					inSender.setItemToSelectOnRender(inIndex, r.uTubeId);
 				}
 				return true;
@@ -252,6 +255,8 @@ enyo.kind({
 				inSender.setSelectedItem(inEvent.rowIndex, entity.uTubeId);
 				this.$.model.currentYouTubeEntity = entity;
 				
+				//clear the selected video item in the list - as we will be looking at a new list
+				this.$.videoList.clearSelection();
 				this.refreshVideoList(entity);
 			}
 			//Always go to the video list pane on a phone
@@ -269,9 +274,8 @@ enyo.kind({
 		//These two lines set the list back to the top.  They come from the ScrollingList kind.
 		this.$.videoList.punt();
 		this.$.videoList.reset();
-		//clear the selected video item in the list - as we are looking at a new list
-		this.$.videoList.clearSelection();
 		
+		//No longer clear the selection here because when the user clicks the refresh button we still want the item selected
 	},
 	doDeleteEntity: function(inSender, inIndex) {
 		if(enyo.exists(this.$.model.currentYouTubeEntities)) {
@@ -349,7 +353,6 @@ enyo.kind({
 
 				console.log("VideoId: " + vid.videoId);
 				this.$.YouTubeService.getVideoDetails(vid.videoId);
-				//this.$.videoDetails.setVideoId(vid.videoId);
 			}
 			
 			//Always go to the video pane on a phone

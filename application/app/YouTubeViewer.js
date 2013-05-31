@@ -32,6 +32,9 @@ enyo.kind({
 	},
 	startTimeInSecondsChanged: function() {
 		this.renderVideo();
+		//This reload must be here to get the time to take
+		//If this is added in renderVideo() switching videos no longer works
+		try { this.$.WV.reloadPage(); } catch (err) { }
 	},
 	renderVideo: function() {
 		var vidUrl = ''
@@ -56,6 +59,5 @@ enyo.kind({
 		}
 		console.log("URL: " + vidUrl);
 		this.$.WV.setUrl(vidUrl);
-		this.$.WV.reloadPage();
 	}
 })
