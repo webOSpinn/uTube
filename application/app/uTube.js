@@ -239,7 +239,7 @@ enyo.kind({
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.uTubeId) {
 					this.$.model.currentYouTubeEntity = r; //This needs to be updated here to keep the data in sync
-					inSender.setItemToSelectOnRender(inIndex, r.uTubeId);
+					inSender.setItemToSelect(inIndex, r.uTubeId);
 				}
 				return true;
 			}
@@ -319,7 +319,7 @@ enyo.kind({
 				this.$.videoName.setContent(r.title);
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.videoId) {
-					inSender.setItemToSelectOnRender(inIndex, r.videoId);
+					inSender.setItemToSelect(inIndex, r.videoId);
 				}
 				return true;
 			}

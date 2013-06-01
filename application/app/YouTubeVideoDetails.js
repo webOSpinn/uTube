@@ -86,7 +86,7 @@ enyo.kind({
 		this.setNumLikes("");
 		this.setNumViews("");
 		this.setTitle("");
-		//this.setVideoId("");
+		this.setVideoId("");
 	},
 	timeLineChange: function (inSender, position) {
 		this.$.vidViewer.setStartTimeInSeconds(position);
