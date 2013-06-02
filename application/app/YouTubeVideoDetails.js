@@ -12,6 +12,7 @@ enyo.kind({
 		videoId: ""
 	},
 	components:[
+		{kind: "Spinn.Utils" name: "Utils"},
 		{name: "title", content: ""},
 		{kind: "HFlexBox", align:"center", pack:"center", components: [
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
@@ -50,8 +51,8 @@ enyo.kind({
 			this.$.duration.setContent("Duration: ");
 		} else {
 			this.$.VideoTimeLine.setMaximum(this.durationInSeconds);
-			var time = Utils.secondsToTime(this.durationInSeconds);
-			this.$.duration.setContent("Duration: " + (Utils.zeroPad(time.h,2) + ":" + Utils.zeroPad(time.m,2) + ":" + Utils.zeroPad(time.s,2)));
+			var time = this.$.Utils.secondsToTime(this.durationInSeconds);
+			this.$.duration.setContent("Duration: " + (this.$.Utils.zeroPad(time.h,2) + ":" + this.$.Utils.zeroPad(time.m,2) + ":" + this.$.Utils.zeroPad(time.s,2)));
 		}
 	},
 	numDislikesChanged: function() {
@@ -71,7 +72,7 @@ enyo.kind({
 	},
 	getVideoUrl: function() {
 		//If no video is selected just go to main YouTube page
-		if(enyo.exists(this.getVideoId())) {
+		if(this.$.Utils.exists(this.getVideoId())) {
 			var time = this.$.VideoTimeLine.getTime();
 			return "http://www.youtube.com/watch?v=" + this.getVideoId() + "#t=" + time.h + "h" + time.m + "m" + time.s + "s";
 		} else {

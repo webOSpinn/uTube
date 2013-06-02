@@ -8,6 +8,7 @@ enyo.kind({
 	  onFailure: ""
 	},
 	components: [
+		{kind: "Spinn.Utils" name: "Utils"},
 		{
 			kind: "WebService",
 			name: "GetVideosWebService",
@@ -38,7 +39,7 @@ enyo.kind({
 		this._getVideosRunning = true;
 		var url = "";
 		
-		if(enyo.exists(startIndex) && enyo.isInt(startIndex) && startIndex >= 1) {
+		if(this.$.Utils.exists(startIndex) && this.$.Utils.isInt(startIndex) && startIndex >= 1) {
 			this._GetVideos_StartIndex = startIndex;
 		} else {
 			this._GetVideos_StartIndex = 1;
@@ -64,24 +65,24 @@ enyo.kind({
 	},
 	_GetVideosAnswer: function (inSender, inResponse) {
 		//Initialize the processed array on the first pass through
-		if(enyo.exists(this._processedVideos) == false) {
+		if(this.$.Utils.exists(this._processedVideos) == false) {
 			this._processedVideos = new Array();
 		}
 		
 		var tempResults = new Array();
 		
 		//Get the count of videos
-		if(enyo.exists(inResponse)
-			&& enyo.exists(inResponse.feed)
-			&& enyo.exists(inResponse.feed.openSearch$totalResults)
-			&& enyo.exists(inResponse.feed.openSearch$totalResults.$t)) {
+		if(this.$.Utils.exists(inResponse)
+			&& this.$.Utils.exists(inResponse.feed)
+			&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults)
+			&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
 			
 			this._GetVideos_VideoCount = inResponse.feed.openSearch$totalResults.$t;
 		}
 		//If the start index is out of bounds no entries will be returned
-		if(enyo.exists(inResponse)
-			&& enyo.exists(inResponse.feed)
-			&& enyo.exists(inResponse.feed.entry)) {
+		if(this.$.Utils.exists(inResponse)
+			&& this.$.Utils.exists(inResponse.feed)
+			&& this.$.Utils.exists(inResponse.feed.entry)) {
 			//Process the results
 			for (var i=0;i<inResponse.feed.entry.length;i++)
 			{
@@ -89,8 +90,8 @@ enyo.kind({
 				var tempVideoId = null;
 				
 				//Extract the video title
-				if(enyo.exists(inResponse.feed.entry[i].title)
-					&& enyo.exists(inResponse.feed.entry[i].title.$t)) {
+				if(this.$.Utils.exists(inResponse.feed.entry[i].title)
+					&& this.$.Utils.exists(inResponse.feed.entry[i].title.$t)) {
 					tempTitle = inResponse.feed.entry[i].title.$t;
 				}
 				//Extract the videoId out of the array of links
@@ -102,7 +103,7 @@ enyo.kind({
 					}
 				}
 				//Add the processed video to the temp array
-				if(enyo.exists(tempVideoId)) {
+				if(this.$.Utils.exists(tempVideoId)) {
 					var tempItem = {
 						title:tempTitle,
 						videoId:tempVideoId
@@ -169,10 +170,10 @@ enyo.kind({
 	},
 	_GetVideoCountAnswer: function (inSender, inResponse) {
 		try {
-			if(enyo.exists(inResponse)
-				&& enyo.exists(inResponse.feed)
-				&& enyo.exists(inResponse.feed.openSearch$totalResults)
-				&& enyo.exists(inResponse.feed.openSearch$totalResults.$t)) {
+			if(this.$.Utils.exists(inResponse)
+				&& this.$.Utils.exists(inResponse.feed)
+				&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults)
+				&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
 				
 				this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: inResponse.feed.openSearch$totalResults.$t});
 			} else {
@@ -204,51 +205,51 @@ enyo.kind({
 	_GetVideoDetailsAnswer: function (inSender, inResponse) {
 		try {
 			//If the start index is out of bounds no entries will be returned
-			if(enyo.exists(inResponse)
-				&& enyo.exists(inResponse.entry)) {
+			if(this.$.Utils.exists(inResponse)
+				&& this.$.Utils.exists(inResponse.entry)) {
 				
 				var videoDetails = new Object();
 				
 				//Extract the video title
-				if(enyo.exists(inResponse.entry.title)
-					&& enyo.exists(inResponse.entry.title.$t)) {
+				if(this.$.Utils.exists(inResponse.entry.title)
+					&& this.$.Utils.exists(inResponse.entry.title.$t)) {
 					videoDetails.Title = inResponse.entry.title.$t;
 				}
 				
-				if(enyo.exists(inResponse.entry.media$group)) {
+				if(this.$.Utils.exists(inResponse.entry.media$group)) {
 					//Extract the description
-					if(enyo.exists(inResponse.entry.media$group.media$description)
-						&& enyo.exists(inResponse.entry.media$group.media$description.$t)) {
+					if(this.$.Utils.exists(inResponse.entry.media$group.media$description)
+						&& this.$.Utils.exists(inResponse.entry.media$group.media$description.$t)) {
 						videoDetails.Description = inResponse.entry.media$group.media$description.$t;
 					}
 					
 					//Extract the duration (in seconds)
-					if(enyo.exists(inResponse.entry.media$group.yt$duration)
-						&& enyo.exists(inResponse.entry.media$group.yt$duration.seconds)) {
+					if(this.$.Utils.exists(inResponse.entry.media$group.yt$duration)
+						&& this.$.Utils.exists(inResponse.entry.media$group.yt$duration.seconds)) {
 						videoDetails.Duration = inResponse.entry.media$group.yt$duration.seconds;
 					}
 					
 					//Extract the date uploaded
-					if(enyo.exists(inResponse.entry.media$group.yt$uploaded)
-						&& enyo.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
+					if(this.$.Utils.exists(inResponse.entry.media$group.yt$uploaded)
+						&& this.$.Utils.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
 						videoDetails.DateUploaded = inResponse.entry.media$group.yt$uploaded.$t;
 					}
 				}
 				
 				//Extract number of views
-				if(enyo.exists(inResponse.entry.yt$statistics)
-					&& enyo.exists(inResponse.entry.yt$statistics.viewCount)) {
+				if(this.$.Utils.exists(inResponse.entry.yt$statistics)
+					&& this.$.Utils.exists(inResponse.entry.yt$statistics.viewCount)) {
 					videoDetails.NumViews = inResponse.entry.yt$statistics.viewCount;
 				}
 				
-				if(enyo.exists(inResponse.entry.yt$rating)) {
+				if(this.$.Utils.exists(inResponse.entry.yt$rating)) {
 					//Extract num likes
-					if(enyo.exists(inResponse.entry.yt$rating.numLikes)) {
+					if(this.$.Utils.exists(inResponse.entry.yt$rating.numLikes)) {
 						videoDetails.NumLikes = inResponse.entry.yt$rating.numLikes;
 					}
 					
 					//Extract num dislikes
-					if(enyo.exists(inResponse.entry.yt$rating.numDislikes)) {
+					if(this.$.Utils.exists(inResponse.entry.yt$rating.numDislikes)) {
 						videoDetails.NumDislikes = inResponse.entry.yt$rating.numDislikes;
 					}
 				}

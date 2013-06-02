@@ -9,6 +9,7 @@ enyo.kind({
 		onCancel: ""
 	},
 	components: [
+		{kind: "Spinn.Utils" name: "Utils"},
 		{kind: "Spinn.InfoDialog", name:"info", onOk:"oKHandler", caption:"", message:""},
 		{kind: "Scroller", name:"theScroller", flex: 1, autoHorizontal: false, horizontal: false,
 			components: [
@@ -39,7 +40,7 @@ enyo.kind({
 		this.clearFields();
 		this._mode = "Add";
 		
-		if(enyo.exists(entity)) {
+		if(this.$.Utils.exists(entity)) {
 			this.$.uTubeId.setValue(entity.uTubeId),
 			this.$.name.setValue(entity.name),
 			this.$.typePicker.setValue(entity.entityType)
@@ -109,7 +110,7 @@ enyo.kind({
 		this.$.info.setMessage(message);
 	},
 	oKHandler: function (inSender, inEvent) {
-		if(enyo.exists(this.input)) {
+		if(this.$.Utils.exists(this.input)) {
 			this.input.forceFocusEnableKeyboard();
 			this.input.forceSelect();
 		}

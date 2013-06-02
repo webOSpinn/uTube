@@ -2,6 +2,8 @@ enyo.kind({
 	name: "UTube",
 	kind: enyo.VFlexBox,
 	components: [
+		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.PhoneUtils" name: "PhoneUtils"},
 		{
 			name: "model",
 			kind: "utube.YouTubeModel"
@@ -113,7 +115,7 @@ enyo.kind({
 		this.inherited(arguments);
 		var b = enyo.getCookie("utube.installed");
 		var c = enyo.fetchDeviceInfo();
-		if (!b || (enyo.exists(c) && b !== c.serialNumber)) {
+		if (!b || (this.$.Utils.exists(c) && b !== c.serialNumber)) {
 			localStorage.removeItem("utube.version");
 			localStorage.removeItem("utube.firstRun");
 			if (enyo.fetchDeviceInfo()) {
@@ -136,7 +138,7 @@ enyo.kind({
 	},
 	loaded: function (inSender) {
 		//When the application is loaded we need to check to see if it is a phone
-		if(enyo.isPhone())
+		if(this.$.PhoneUtils.isPhone())
 		{ this.addClass("isPhone"); }
 	},
 	btnAbout_Click: function() {
@@ -155,7 +157,7 @@ enyo.kind({
 		this.$.addEditEntityDialog.openAtCenter();
 	},
 	editEntity: function(inSender, inResponse){
-		if(enyo.exists(this.$.model.currentYouTubeEntity)){
+		if(this.$.Utils.exists(this.$.model.currentYouTubeEntity)){
 			this.$.addEditEntityDialog.openAtCenter(this.$.model.currentYouTubeEntity);
 		}
 	},
@@ -171,15 +173,15 @@ enyo.kind({
 		//this.$.videoDetails.show();
 	},
 	refreshVideoList_click: function(inSender, inResponse){
-		if(enyo.exists(this.$.model.currentYouTubeEntity)){
+		if(this.$.Utils.exists(this.$.model.currentYouTubeEntity)){
 			//Clear the array of videos so we load a new one
 			this.videos[this.$.model.currentYouTubeEntity.uTubeId] = new Array();
 			this.refreshVideoList(this.$.model.currentYouTubeEntity);
 		}
 	},
 	GetVideosAnswer: function (inSender, inResponse){
-		if(enyo.exists(this.videos)
-			&& enyo.exists(this.videos[inResponse.entity.uTubeId])){
+		if(this.$.Utils.exists(this.videos)
+			&& this.$.Utils.exists(this.videos[inResponse.entity.uTubeId])){
 			this.videos[inResponse.entity.uTubeId] = this.videos[inResponse.entity.uTubeId].concat(inResponse.Videos);
 		} else {
 			this.videos[inResponse.entity.uTubeId] = inResponse.Videos;
@@ -199,26 +201,26 @@ enyo.kind({
 	},
 	GetVideoDetailsAnswer: function (inSender, inResponse){
 		this.$.videoDetails.clear();
-		if(enyo.exists(inResponse.videoDetails)) {
-			if(enyo.exists(inResponse.videoDetails.DateUploaded)) {
+		if(this.$.Utils.exists(inResponse.videoDetails)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.DateUploaded)) {
 				this.$.videoDetails.setDateUploaded(inResponse.videoDetails.DateUploaded);
 			}
-			if(enyo.exists(inResponse.videoDetails.Description)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.Description)) {
 				this.$.videoDetails.setDescription(inResponse.videoDetails.Description);
 			}
-			if(enyo.exists(inResponse.videoDetails.Duration)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.Duration)) {
 				this.$.videoDetails.setDurationInSeconds(inResponse.videoDetails.Duration);
 			}
-			if(enyo.exists(inResponse.videoDetails.NumDislikes)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.NumDislikes)) {
 				this.$.videoDetails.setNumDislikes(inResponse.videoDetails.NumDislikes);
 			}
-			if(enyo.exists(inResponse.videoDetails.NumLikes)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.NumLikes)) {
 				this.$.videoDetails.setNumLikes(inResponse.videoDetails.NumLikes);
 			}
-			if(enyo.exists(inResponse.videoDetails.NumViews)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.NumViews)) {
 				this.$.videoDetails.setNumViews(inResponse.videoDetails.NumViews);
 			}
-			if(enyo.exists(inResponse.videoDetails.Title)) {
+			if(this.$.Utils.exists(inResponse.videoDetails.Title)) {
 				this.$.videoDetails.setTitle(inResponse.videoDetails.Title);
 			}
 		}
@@ -247,7 +249,7 @@ enyo.kind({
 	},
 	entityListItemClick: function(inSender, inEvent) {
 		//Only trigger if user has clicked on an item
-		if(enyo.exists(inEvent.rowIndex)) {
+		if(this.$.Utils.exists(inEvent.rowIndex)) {
 			//Only do selection if the user has selected a different entity
 			if(inSender.getSelectedIndex() != inEvent.rowIndex) {
 				var entity = this.$.model.currentYouTubeEntities[inEvent.rowIndex];
@@ -260,12 +262,12 @@ enyo.kind({
 				this.refreshVideoList(entity);
 			}
 			//Always go to the video list pane on a phone
-			if(enyo.isPhone())
+			if(this.$.PhoneUtils.isPhone())
 			{ this.$.slidingPane.selectView(this.$.videosPane); }
 		}
 	},
 	refreshVideoList: function(entity) {
-		if(enyo.exists(entity)){
+		if(this.$.Utils.exists(entity)){
 			//Only setup the array the first time the user click the item
 			if(!this.videos[entity.uTubeId]) {
 				this.videos[entity.uTubeId] = new Array();
@@ -278,12 +280,12 @@ enyo.kind({
 		//No longer clear the selection here because when the user clicks the refresh button we still want the item selected
 	},
 	doDeleteEntity: function(inSender, inIndex) {
-		if(enyo.exists(this.$.model.currentYouTubeEntities)) {
+		if(this.$.Utils.exists(this.$.model.currentYouTubeEntities)) {
 			var entityToDelete = this.$.model.currentYouTubeEntities[inIndex];
 			
 			//Delete the videos from the list
-			if(enyo.exists(this.videos)
-				&& enyo.exists(this.videos[entityToDelete.uTubeId])){
+			if(this.$.Utils.exists(this.videos)
+				&& this.$.Utils.exists(this.videos[entityToDelete.uTubeId])){
 				delete this.videos[entityToDelete.uTubeId];
 			}
 			
@@ -310,9 +312,9 @@ enyo.kind({
 		this.$.videoList.refresh();
 	},
 	getVideoItem: function(inSender, inIndex) {
-		if(enyo.exists(this.videos)
-			&& enyo.exists(this.$.model.currentYouTubeEntity)
-			&& enyo.exists(this.videos[this.$.model.currentYouTubeEntity.uTubeId])) {
+		if(this.$.Utils.exists(this.videos)
+			&& this.$.Utils.exists(this.$.model.currentYouTubeEntity)
+			&& this.$.Utils.exists(this.videos[this.$.model.currentYouTubeEntity.uTubeId])) {
 			
 			var r = this.videos[this.$.model.currentYouTubeEntity.uTubeId][inIndex];
 			if(r) {
@@ -326,7 +328,7 @@ enyo.kind({
 		}
 	},
 	acquireVideoListPage: function(inSender, inPage) {
-		if(enyo.exists(this.$.model.currentYouTubeEntity)) {
+		if(this.$.Utils.exists(this.$.model.currentYouTubeEntity)) {
 			var index = (Math.abs(inPage) * inSender.pageSize);
 			//If index isn't past max videos...
 			if((index < this.$.model.currentYouTubeEntity.numVideos) || (this.$.model.currentYouTubeEntity.numVideos == 0)) {
@@ -344,7 +346,7 @@ enyo.kind({
 	},
 	videoListItemClick: function(inSender, inEvent) {
 		//Only trigger if user has clicked on an item
-		if(enyo.exists(inEvent.rowIndex)) {
+		if(this.$.Utils.exists(inEvent.rowIndex)) {
 			//Only do selection if the user has selected a different video
 			if(inSender.getSelectedIndex() != inEvent.rowIndex) {
 				var vid = this.videos[this.$.model.currentYouTubeEntity.uTubeId][inEvent.rowIndex]
@@ -356,7 +358,7 @@ enyo.kind({
 			}
 			
 			//Always go to the video pane on a phone
-			if(enyo.isPhone())
+			if(this.$.PhoneUtils.isPhone())
 			{ this.$.slidingPane.selectView(this.$.videoPlayerPane); }
 		}
 	}

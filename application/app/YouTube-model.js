@@ -1,13 +1,16 @@
 enyo.kind({
 	name: "utube.YouTubeModel",
 	kind: enyo.Component,
-	components: [{
-		name: "db",
-		kind: "onecrayon.Database",
-		database: "ext:" + (enyo.g11n.getPlatform() === "device" ? enyo.fetchAppId() : "com.spinn.utube"),
-		version: "",
-		debug: (enyo.exists(enyo.fetchFrameworkConfig().debuggingEnabled) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
-	}],
+	components: [
+		{kind: "Spinn.Utils" name: "Utils"},
+		{
+			name: "db",
+			kind: "onecrayon.Database",
+			database: "ext:" + (enyo.g11n.getPlatform() === "device" ? enyo.fetchAppId() : "com.spinn.utube"),
+			version: "",
+			debug: (this.$.Utils.exists(enyo.fetchFrameworkConfig().debuggingEnabled) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
+		}
+	],
 	constructor: function () {
 		this.inherited(arguments);
 		this.currentYouTubeEntity = null;
@@ -95,7 +98,7 @@ enyo.kind({
 	},
 	_insertYouTubeEntityFinished: function (data, callback) {
 		this.refreshYouTubeEntities();
-		if (enyo.exists(callback)) {
+		if (this.$.Utils.exists(callback)) {
 			callback(data)
 		}
 	},
@@ -126,7 +129,7 @@ enyo.kind({
 		if (id === null) {
 			id = this.$.db.lastInsertID()
 		}
-		if (enyo.exists(callback)) {
+		if (this.$.Utils.exists(callback)) {
 			callback(id)
 		}
 	},
@@ -140,7 +143,7 @@ enyo.kind({
 	},
 	_deleteYouTubeEntityFinish: function (id, callBack) {
 		this.refreshYouTubeEntities();
-		if (enyo.exists(callBack)) {
+		if (this.$.Utils.exists(callBack)) {
 			callBack()
 		}
 	}
