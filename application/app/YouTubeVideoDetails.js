@@ -12,7 +12,7 @@ enyo.kind({
 		videoId: ""
 	},
 	components:[
-		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.Utils", name: "Utils"},
 		{name: "title", content: ""},
 		{kind: "HFlexBox", align:"center", pack:"center", components: [
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}

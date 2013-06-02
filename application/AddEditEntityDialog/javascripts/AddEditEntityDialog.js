@@ -9,7 +9,7 @@ enyo.kind({
 		onCancel: ""
 	},
 	components: [
-		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.Utils", name: "Utils"},
 		{kind: "Spinn.InfoDialog", name:"info", onOk:"oKHandler", caption:"", message:""},
 		{kind: "Scroller", name:"theScroller", flex: 1, autoHorizontal: false, horizontal: false,
 			components: [

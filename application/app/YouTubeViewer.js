@@ -9,7 +9,7 @@ enyo.kind({
 		startTimeInSeconds: 0
 	},
 	components:[
-		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.Utils", name: "Utils"},
 		{
 			kind: "WebView",
 			name: "WV",

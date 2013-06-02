@@ -2,8 +2,8 @@ enyo.kind({
 	name: "UTube",
 	kind: enyo.VFlexBox,
 	components: [
-		{kind: "Spinn.Utils" name: "Utils"},
-		{kind: "Spinn.PhoneUtils" name: "PhoneUtils"},
+		{kind: "Spinn.Utils", name: "Utils"},
+		{kind: "Spinn.PhoneUtils", name: "PhoneUtils"},
 		{
 			name: "model",
 			kind: "utube.YouTubeModel"

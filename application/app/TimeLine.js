@@ -14,7 +14,7 @@ enyo.kind({
 		onChange: ""
 	},
 	components:[
-		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.Utils", name: "Utils"},
 		{kind: "RowGroup", name: "Header", caption: "Jump To: ", components: [
 			{kind: "Slider", name: "TimeSlider", position: 0, maximum: 60, minimum: 0, snap: 1,
 				onChanging: "sliderChanging", onChange: "sliderChange"}

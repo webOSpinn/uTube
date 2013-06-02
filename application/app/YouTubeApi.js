@@ -8,7 +8,7 @@ enyo.kind({
 	  onFailure: ""
 	},
 	components: [
-		{kind: "Spinn.Utils" name: "Utils"},
+		{kind: "Spinn.Utils", name: "Utils"},
 		{
 			kind: "WebService",
 			name: "GetVideosWebService",
