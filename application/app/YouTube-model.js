@@ -8,7 +8,7 @@ enyo.kind({
 			kind: "onecrayon.Database",
 			database: "ext:" + (enyo.g11n.getPlatform() === "device" ? enyo.fetchAppId() : "com.spinn.utube"),
 			version: "",
-			debug: (this.$.Utils.exists(enyo.fetchFrameworkConfig().debuggingEnabled) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
+			debug: (((typeof enyo.fetchFrameworkConfig().debuggingEnabled !== "undefined") && (enyo.fetchFrameworkConfig().debuggingEnabled !== null)) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
 		}
 	],
 	constructor: function () {

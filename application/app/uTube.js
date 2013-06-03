@@ -115,7 +115,7 @@ enyo.kind({
 		this.inherited(arguments);
 		var b = enyo.getCookie("utube.installed");
 		var c = enyo.fetchDeviceInfo();
-		if (!b || (this.$.Utils.exists(c) && b !== c.serialNumber)) {
+		if (!b || (((typeof c !== "undefined") && (c !== NaN) && (c !== null)) && b !== c.serialNumber)) {
 			localStorage.removeItem("utube.version");
 			localStorage.removeItem("utube.firstRun");
 			if (enyo.fetchDeviceInfo()) {
