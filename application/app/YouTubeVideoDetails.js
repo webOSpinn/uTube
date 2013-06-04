@@ -71,8 +71,9 @@ enyo.kind({
 		this.$.vidViewer.setVideoId(this.getVideoId());
 	},
 	getVideoUrl: function() {
+		var videoID = this.getVideoId();
 		//If no video is selected just go to main YouTube page
-		if(this.$.Utils.exists(this.getVideoId())) {
+		if(this.$.Utils.exists(videoID) && (enyo.string.trim(videoID) != "")) {
 			var time = this.$.VideoTimeLine.getTime();
 			return "http://www.youtube.com/watch?v=" + this.getVideoId() + "#t=" + time.h + "h" + time.m + "m" + time.s + "s";
 		} else {

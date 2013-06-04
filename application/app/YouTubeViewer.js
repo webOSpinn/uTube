@@ -59,7 +59,7 @@ enyo.kind({
 				vidUrl = vidUrl + '#t=' + this.startTimeInSeconds + 's'
 			}
 		}
-		console.log("URL: " + vidUrl);
+		console.log("YouTubeViewer URL: " + vidUrl);
 		this.$.WV.setUrl(vidUrl);
 	}
 })

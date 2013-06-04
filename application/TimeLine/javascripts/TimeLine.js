@@ -1,6 +1,7 @@
 enyo.kind({
 	name: "TimeLine",
 	kind: enyo.Control,
+	className: "TimeLine",
 	published: {
 		caption: "Jump To: ",
 		position: 0,

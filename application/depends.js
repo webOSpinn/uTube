@@ -3,7 +3,7 @@ enyo.depends(
 	"app/database-enyo.js",
 	"app/YouTube-model.js",
 	"app/YouTubeApi.js",
-	"app/TimeLine.js",
+	"TimeLine/depends.js",
 	"AddEditEntityDialog/depends.js",
 	"app/YouTubeViewer.js",
 	"app/YouTubeVideoDetails.js",

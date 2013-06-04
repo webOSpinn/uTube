@@ -31,7 +31,7 @@ enyo.kind({
 		{kind: "SlidingPane", name: "slidingPane", flex: 1, components: [
 			{name: "entityPane", width: "320px", components: [
 				{kind: "VFlexBox",  flex: 1, components: [
-					{kind: "Header", content: "YouTube Users"},
+					{kind: "Header", content: "Users, Channels, Playlists"},
 					{kind: "Scroller", name:"entityListScroller", flex: 1, autoHorizontal: false, horizontal: false,
 						components: [
 							{name: "entityList", kind: "Spinn.SelectableVirtualRepeater", onSetupRow: "getEntityItem", onclick: "entityListItemClick",
@@ -53,6 +53,12 @@ enyo.kind({
 							name: "editButton",
 							icon: enyo.fetchAppRootPath() + "images/menu-icon-edit.png",
 							onclick: "editEntity"
+						},
+						{
+							name: "openEntityInBrowserButton",
+							kind: "ToolButton",
+							icon: enyo.fetchAppRootPath() + "images/menu-icon-share.png",
+							onclick: "btnOpenEntityInBrowser_Click"
 						}]
 					}
 				]}
@@ -147,9 +153,25 @@ enyo.kind({
 	btnShare_Click: function(inSender) {
 		this.$.openApp.call({
 			"id": "com.palm.app.browser", 
-			"params": {
-				"target": this.$.videoDetails.getVideoUrl()
+			"params": { "target": this.$.videoDetails.getVideoUrl() }
+		});
+	},
+	btnOpenEntityInBrowser_Click: function(inSender) {
+		var url = "http://www.youtube.com/";
+		//If nothing is selected just go to main YouTube page
+		if(this.$.Utils.exists(this.$.model.currentYouTubeEntity)) {
+			if(this.$.model.currentYouTubeEntity.entityType == "User") {
+				url = url + "user/" + this.$.model.currentYouTubeEntity.uTubeId;
+			} else if (this.$.model.currentYouTubeEntity.entityType == "Channel") {
+				url = url + "channel/" + this.$.model.currentYouTubeEntity.uTubeId;
+			} else if (this.$.model.currentYouTubeEntity.entityType == "Playlist") {
+				url = url + "playlist?list=" + this.$.model.currentYouTubeEntity.uTubeId;
 			}
+		}
+		console.log("Launch Entity URL: " + url);
+		this.$.openApp.call({
+			"id": "com.palm.app.browser", 
+			"params": { "target": url }
 		});
 	},
 	addNewEntity: function(inSender, inResponse){

@@ -1,0 +1,2 @@
+/*Make the timeline take up less space - 5px margin instead of 20px*/
+.TimeLine .enyo-slider-progress { margin:5px 0px; }
