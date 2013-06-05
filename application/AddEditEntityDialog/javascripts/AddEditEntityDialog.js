@@ -17,7 +17,7 @@ enyo.kind({
 					{name: "uTubeId", kind: "Input", hint:"YouTube user or channel ID", autocorrect: false, onchange: "uTubeIdChanged"}
 				]},
 				{kind: "RowGroup", caption: "Name:", components: [
-					{name: "name", kind: "Input", autocorrect: false, hint:"Enter display name"}
+					{name: "name", kind: "Input", autocorrect: false, selectAllOnFocus: true, hint:"Enter display name"}
 				]},
 				{kind: "RowGroup", caption: "Type:", components: [
 					{

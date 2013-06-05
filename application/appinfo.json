@@ -13,7 +13,7 @@
 	"aboutDialogInfo": {
 		"email": "spinn@outlook.com",
 		"emailSubject": "uTube",
-		"description": "This app is designed to let you watch videos from all of your favorite YouTube users, channels, and playlists.",
+		"description": "This app is designed to let you watch videos from all of your favorite YouTube users, channels, and playlists.<br/><br/><b>Icon Set</b><br/>Some of the icons used are from the icon set: Icons8 Metro Style Icons by <a href=\"http://www.visualpharm.com\">VisualPharm</a>.<br/>For more information about the icons please visit the following websites:<br/><a href=\"http://www.iconarchive.com/show/icons8-metro-style-icons-by-visualpharm.html\">IconArchive</a><br/><a href=\"http://icons8.com/\">icons8.com</a>",
 		"copyright": "&copy; Copyright 2013 Spinn"
 	}
 }

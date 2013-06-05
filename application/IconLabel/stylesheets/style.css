@@ -1,0 +1,5 @@
+.spinn-icon-label-caption {
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

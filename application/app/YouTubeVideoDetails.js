@@ -17,12 +17,14 @@ enyo.kind({
 		{kind: "HFlexBox", align:"center", pack:"center", components: [
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 		]},
-		{kind: "TimeLine", name: "VideoTimeLine", maximum: 0, onChange: "timeLineChange"},
-		{name: "numViews", content: ""},
-		{name: "numLikes", content: ""},
-		{name: "numDislikes", content: ""},
-		{name: "duration", content: ""},
-		{name: "dateUploaded", content: ""},
+		{name: "VideoTimeLine", kind: "TimeLine", maximum: 0, onChange: "timeLineChange"},
+		{name: "numViews", kind: "Spinn.IconLabel", iconSrc: "images/eye.png", caption: ""},
+		{kind: "HFlexBox", align:"center", pack:"left", components: [
+			{name: "numLikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-up.png", caption: ""},
+			{name: "numDislikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-down.png", caption: ""}
+		]},
+		{name: "duration", kind: "Spinn.IconLabel", iconSrc: "images/clock.png", caption: ""},
+		{name: "dateUploaded", kind: "Spinn.IconLabel", iconSrc: "images/calendar.png", caption: ""},
 		{name: "description", content: ""}
 	],
 	create: function() {
@@ -38,7 +40,7 @@ enyo.kind({
 		this.videoIdChanged();
 	},
 	dateUploadedChanged: function() {
-		this.$.dateUploaded.setContent("Date Uploaded: " + this.dateUploaded);
+		this.$.dateUploaded.setCaption(this.dateUploaded);
 	},
 	descriptionChanged: function() {
 		this.$.description.setContent(this.description);
@@ -48,21 +50,21 @@ enyo.kind({
 		
 		if(this.durationInSeconds == "" ) {
 			this.$.VideoTimeLine.setMaximum(0);
-			this.$.duration.setContent("Duration: ");
+			this.$.duration.setCaption();
 		} else {
 			this.$.VideoTimeLine.setMaximum(this.durationInSeconds);
 			var time = this.$.Utils.secondsToTime(this.durationInSeconds);
-			this.$.duration.setContent("Duration: " + (this.$.Utils.zeroPad(time.h,2) + ":" + this.$.Utils.zeroPad(time.m,2) + ":" + this.$.Utils.zeroPad(time.s,2)));
+			this.$.duration.setCaption(this.$.Utils.zeroPad(time.h,2) + ":" + this.$.Utils.zeroPad(time.m,2) + ":" + this.$.Utils.zeroPad(time.s,2));
 		}
 	},
 	numDislikesChanged: function() {
-		this.$.numDislikes.setContent("Num Dislikes: " + this.numDislikes);
+		this.$.numDislikes.setCaption(this.numDislikes);
 	},
 	numLikesChanged: function() {
-		this.$.numLikes.setContent("Num Likes: " + this.numLikes);
+		this.$.numLikes.setCaption(this.numLikes);
 	},
 	numViewsChanged: function() {
-		this.$.numViews.setContent("Num Views: " + this.numViews);
+		this.$.numViews.setCaption(this.numViews);
 	},
 	titleChanged: function() {
 		this.$.title.setContent(this.title);
