@@ -36,7 +36,7 @@ enyo.kind({
 						components: [
 							{name: "entityList", kind: "Spinn.SelectableVirtualRepeater", onSetupRow: "getEntityItem", onclick: "entityListItemClick",
 								components: [
-									{kind: "Spinn.CountableItem", name: "entityItem", swipeable: true, onConfirm: "doDeleteEntity"}
+									{kind: "Spinn.CountableIconItem", name: "entityItem", swipeable: true, onConfirm: "doDeleteEntity"}
 								]
 							}
 						]
@@ -260,6 +260,14 @@ enyo.kind({
 			if (r) {
 				this.$.entityItem.setCaption(r.name);
 				this.$.entityItem.setCount(r.numVideos);
+				if(r.entityType == "User") {
+					this.$.entityItem.setIconSrc("images/user.png");
+				} else if (r.entityType == "Channel") {
+					this.$.entityItem.setIconSrc("images/channel.png");
+				} else if (r.entityType == "Playlist") {
+					this.$.entityItem.setIconSrc("images/playlist.png");
+				}
+				
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.uTubeId) {
 					this.$.model.currentYouTubeEntity = r; //This needs to be updated here to keep the data in sync

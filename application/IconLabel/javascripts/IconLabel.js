@@ -10,9 +10,9 @@ enyo.kind({
 	components:[
 		{kind: "Spinn.Utils", name: "Utils"},
 		{kind: "HFlexBox", components: [
-			{name: "icon", kind: "Image", src: "", style: "padding-left: 7px;"},
+			{name: "icon", kind: "Image", className:"spinn-icon-label-icon", src: ""},
 			{name: "heightHolder", kind: "Image", src: "IconLabel/images/heightHolder.png"},
-			{name: "caption", content: "", className: "spinn-icon-label-caption", style: "padding-left: 7px; padding-top: 7px;"}
+			{name: "caption", content: "", className: "spinn-icon-label-caption"}
 		]}
 	],
 	create: function() {

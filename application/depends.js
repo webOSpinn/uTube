@@ -6,6 +6,7 @@ enyo.depends(
 	"TimeLine/depends.js",
 	"AddEditEntityDialog/depends.js",
 	"IconLabel/depends.js",
+	"CountableIconItem/depends.js",
 	"app/YouTubeViewer.js",
 	"app/YouTubeVideoDetails.js",
 	"app/uTube.js"
