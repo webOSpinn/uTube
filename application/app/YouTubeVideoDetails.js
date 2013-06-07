@@ -18,14 +18,24 @@ enyo.kind({
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 		]},
 		{name: "VideoTimeLine", kind: "TimeLine", maximum: 0, onChange: "timeLineChange"},
-		{name: "numViews", kind: "Spinn.IconLabel", iconSrc: "images/eye.png", caption: ""},
-		{kind: "HFlexBox", align:"center", pack:"left", components: [
-			{name: "numLikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-up.png", caption: ""},
-			{name: "numDislikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-down.png", caption: ""}
+		{kind: "HFlexBox", align:"center", pack:"center", components: [
+			{kind: "RowGroup", style: "width: 95%;", components: [
+				{kind: "HFlexBox", components: [
+					{name: "numViews", kind: "Spinn.IconLabel", iconSrc: "images/eye.png", caption: "", style: "width:50%;"},
+					{name: "likeDislike", kind: "HFlexBox", align:"center", pack:"left", style: "width:50%;", components: [
+						{name: "numLikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-up.png", caption: ""},
+						{name: "numDislikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-down.png", caption: ""}
+					]}
+				]},
+				{kind: "HFlexBox", components: [
+					{name: "duration", kind: "Spinn.IconLabel", iconSrc: "images/clock.png", caption: "", style: "width:50%;", },
+					{name: "dateUploaded", kind: "Spinn.IconLabel", iconSrc: "images/calendar.png", caption: "", style: "width:50%;", }
+				]}
+			]}
 		]},
-		{name: "duration", kind: "Spinn.IconLabel", iconSrc: "images/clock.png", caption: ""},
-		{name: "dateUploaded", kind: "Spinn.IconLabel", iconSrc: "images/calendar.png", caption: ""},
-		{name: "description", content: ""}
+		{kind: "RowGroup", name: "descriptionHeader", caption: "Description: ", components: [
+			{name: "description", content: ""}
+		]}
 	],
 	create: function() {
 		this.inherited(arguments);
@@ -50,7 +60,7 @@ enyo.kind({
 		
 		if(this.durationInSeconds == "" ) {
 			this.$.VideoTimeLine.setMaximum(0);
-			this.$.duration.setCaption();
+			this.$.duration.setCaption("");
 		} else {
 			this.$.VideoTimeLine.setMaximum(this.durationInSeconds);
 			var time = this.$.Utils.secondsToTime(this.durationInSeconds);

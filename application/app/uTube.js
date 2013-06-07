@@ -385,11 +385,14 @@ enyo.kind({
 
 				console.log("VideoId: " + vid.videoId);
 				this.$.YouTubeService.getVideoDetails(vid.videoId);
+				this.$.detailScroller.scrollTo(0,0);
 			}
 			
-			//Always go to the video pane on a phone
+			//Always go to the video pane on a phone otherwise collapse the entity pane
 			if(this.$.PhoneUtils.isPhone())
 			{ this.$.slidingPane.selectView(this.$.videoPlayerPane); }
+			else
+			{ this.$.slidingPane.selectView(this.$.videosPane); }
 		}
 	}
 });

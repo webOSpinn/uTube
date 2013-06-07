@@ -16,7 +16,7 @@ enyo.kind({
 	},
 	components:[
 		{kind: "Spinn.Utils", name: "Utils"},
-		{kind: "RowGroup", name: "Header", caption: "Jump To: ", components: [
+		{kind: "RowGroup", name: "header", caption: "Jump To: ", components: [
 			{kind: "Slider", name: "TimeSlider", position: 0, maximum: 60, minimum: 0, snap: 1,
 				onChanging: "sliderChanging", onChange: "sliderChange"}
 		]}
@@ -56,9 +56,9 @@ enyo.kind({
 	renderCaption: function() {
 		if (this.showTimeInCaption) {
 			var time = this.$.Utils.secondsToTime(this.$.TimeSlider.position);
-			this.$.Header.setCaption(this.caption + (this.$.Utils.zeroPad(time.h,2) + ":" + this.$.Utils.zeroPad(time.m,2) + ":" + this.$.Utils.zeroPad(time.s,2)));
+			this.$.header.setCaption(this.caption + (this.$.Utils.zeroPad(time.h,2) + ":" + this.$.Utils.zeroPad(time.m,2) + ":" + this.$.Utils.zeroPad(time.s,2)));
 		} else {
-			this.$.Header.setCaption(this.caption);
+			this.$.header.setCaption(this.caption);
 		}
 	},
 	//Fired while sliding
