@@ -9,7 +9,6 @@ enyo.kind({
 		startTimeInSeconds: 0
 	},
 	components:[
-		{kind: "Spinn.Utils", name: "Utils"},
 		{
 			kind: "WebView",
 			name: "WV",
@@ -41,7 +40,7 @@ enyo.kind({
 	renderVideo: function() {
 		var vidUrl = ''
 		//Make sure that there is a video name supplied
-		if(this.$.Utils.exists(this.videoId)) {
+		if(Spinn.Utils.exists(this.videoId)) {
 			var temp = enyo.string.trim(this.videoId);
 			if(temp != "") {
 				vidUrl = 'http';

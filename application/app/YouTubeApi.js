@@ -8,7 +8,6 @@ enyo.kind({
 	  onFailure: ""
 	},
 	components: [
-		{kind: "Spinn.Utils", name: "Utils"},
 		{
 			kind: "WebService",
 			name: "GetVideosWebService",
@@ -39,7 +38,7 @@ enyo.kind({
 		this._getVideosRunning = true;
 		var url = "";
 		
-		if(this.$.Utils.exists(startIndex) && this.$.Utils.isInt(startIndex) && startIndex >= 1) {
+		if(Spinn.Utils.exists(startIndex) && Spinn.Utils.isInt(startIndex) && startIndex >= 1) {
 			this._GetVideos_StartIndex = startIndex;
 		} else {
 			this._GetVideos_StartIndex = 1;
@@ -65,24 +64,24 @@ enyo.kind({
 	},
 	_GetVideosAnswer: function (inSender, inResponse) {
 		//Initialize the processed array on the first pass through
-		if(this.$.Utils.exists(this._processedVideos) == false) {
+		if(Spinn.Utils.exists(this._processedVideos) == false) {
 			this._processedVideos = new Array();
 		}
 		
 		var tempResults = new Array();
 		
 		//Get the count of videos
-		if(this.$.Utils.exists(inResponse)
-			&& this.$.Utils.exists(inResponse.feed)
-			&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults)
-			&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
+		if(Spinn.Utils.exists(inResponse)
+			&& Spinn.Utils.exists(inResponse.feed)
+			&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults)
+			&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
 			
 			this._GetVideos_VideoCount = inResponse.feed.openSearch$totalResults.$t;
 		}
 		//If the start index is out of bounds no entries will be returned
-		if(this.$.Utils.exists(inResponse)
-			&& this.$.Utils.exists(inResponse.feed)
-			&& this.$.Utils.exists(inResponse.feed.entry)) {
+		if(Spinn.Utils.exists(inResponse)
+			&& Spinn.Utils.exists(inResponse.feed)
+			&& Spinn.Utils.exists(inResponse.feed.entry)) {
 			//Process the results
 			for (var i=0;i<inResponse.feed.entry.length;i++)
 			{
@@ -90,8 +89,8 @@ enyo.kind({
 				var tempVideoId = null;
 				
 				//Extract the video title
-				if(this.$.Utils.exists(inResponse.feed.entry[i].title)
-					&& this.$.Utils.exists(inResponse.feed.entry[i].title.$t)) {
+				if(Spinn.Utils.exists(inResponse.feed.entry[i].title)
+					&& Spinn.Utils.exists(inResponse.feed.entry[i].title.$t)) {
 					tempTitle = inResponse.feed.entry[i].title.$t;
 				}
 				//Extract the videoId out of the array of links
@@ -103,7 +102,7 @@ enyo.kind({
 					}
 				}
 				//Add the processed video to the temp array
-				if(this.$.Utils.exists(tempVideoId)) {
+				if(Spinn.Utils.exists(tempVideoId)) {
 					var tempItem = {
 						title:tempTitle,
 						videoId:tempVideoId
@@ -170,10 +169,10 @@ enyo.kind({
 	},
 	_GetVideoCountAnswer: function (inSender, inResponse) {
 		try {
-			if(this.$.Utils.exists(inResponse)
-				&& this.$.Utils.exists(inResponse.feed)
-				&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults)
-				&& this.$.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
+			if(Spinn.Utils.exists(inResponse)
+				&& Spinn.Utils.exists(inResponse.feed)
+				&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults)
+				&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
 				
 				this.doGetVideoCountSuccess({uTubeId: this._GetVideoCount_UserOrChannelOrPlaylistId, numVideos: inResponse.feed.openSearch$totalResults.$t});
 			} else {
@@ -205,51 +204,51 @@ enyo.kind({
 	_GetVideoDetailsAnswer: function (inSender, inResponse) {
 		try {
 			//If the start index is out of bounds no entries will be returned
-			if(this.$.Utils.exists(inResponse)
-				&& this.$.Utils.exists(inResponse.entry)) {
+			if(Spinn.Utils.exists(inResponse)
+				&& Spinn.Utils.exists(inResponse.entry)) {
 				
 				var videoDetails = new Object();
 				
 				//Extract the video title
-				if(this.$.Utils.exists(inResponse.entry.title)
-					&& this.$.Utils.exists(inResponse.entry.title.$t)) {
+				if(Spinn.Utils.exists(inResponse.entry.title)
+					&& Spinn.Utils.exists(inResponse.entry.title.$t)) {
 					videoDetails.Title = inResponse.entry.title.$t;
 				}
 				
-				if(this.$.Utils.exists(inResponse.entry.media$group)) {
+				if(Spinn.Utils.exists(inResponse.entry.media$group)) {
 					//Extract the description
-					if(this.$.Utils.exists(inResponse.entry.media$group.media$description)
-						&& this.$.Utils.exists(inResponse.entry.media$group.media$description.$t)) {
+					if(Spinn.Utils.exists(inResponse.entry.media$group.media$description)
+						&& Spinn.Utils.exists(inResponse.entry.media$group.media$description.$t)) {
 						videoDetails.Description = inResponse.entry.media$group.media$description.$t;
 					}
 					
 					//Extract the duration (in seconds)
-					if(this.$.Utils.exists(inResponse.entry.media$group.yt$duration)
-						&& this.$.Utils.exists(inResponse.entry.media$group.yt$duration.seconds)) {
+					if(Spinn.Utils.exists(inResponse.entry.media$group.yt$duration)
+						&& Spinn.Utils.exists(inResponse.entry.media$group.yt$duration.seconds)) {
 						videoDetails.Duration = inResponse.entry.media$group.yt$duration.seconds;
 					}
 					
 					//Extract the date uploaded
-					if(this.$.Utils.exists(inResponse.entry.media$group.yt$uploaded)
-						&& this.$.Utils.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
+					if(Spinn.Utils.exists(inResponse.entry.media$group.yt$uploaded)
+						&& Spinn.Utils.exists(inResponse.entry.media$group.yt$uploaded.$t)) {
 						videoDetails.DateUploaded = inResponse.entry.media$group.yt$uploaded.$t;
 					}
 				}
 				
 				//Extract number of views
-				if(this.$.Utils.exists(inResponse.entry.yt$statistics)
-					&& this.$.Utils.exists(inResponse.entry.yt$statistics.viewCount)) {
+				if(Spinn.Utils.exists(inResponse.entry.yt$statistics)
+					&& Spinn.Utils.exists(inResponse.entry.yt$statistics.viewCount)) {
 					videoDetails.NumViews = inResponse.entry.yt$statistics.viewCount;
 				}
 				
-				if(this.$.Utils.exists(inResponse.entry.yt$rating)) {
+				if(Spinn.Utils.exists(inResponse.entry.yt$rating)) {
 					//Extract num likes
-					if(this.$.Utils.exists(inResponse.entry.yt$rating.numLikes)) {
+					if(Spinn.Utils.exists(inResponse.entry.yt$rating.numLikes)) {
 						videoDetails.NumLikes = inResponse.entry.yt$rating.numLikes;
 					}
 					
 					//Extract num dislikes
-					if(this.$.Utils.exists(inResponse.entry.yt$rating.numDislikes)) {
+					if(Spinn.Utils.exists(inResponse.entry.yt$rating.numDislikes)) {
 						videoDetails.NumDislikes = inResponse.entry.yt$rating.numDislikes;
 					}
 				}
