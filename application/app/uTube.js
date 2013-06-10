@@ -21,9 +21,11 @@ enyo.kind({
 			onFailure: "YouTubeFail"
 		},
 		{kind: "Spinn.AboutDialog", name: "theAboutDialog"},
+		{kind: "HelpDialog", name: "theHelpDialog"},
 		{kind: "AddEditEntityDialog", name: "addEditEntityDialog",
 			onSave: "handleNewOrUpdateEntity", onCancel: "handleCancelNewOrUpdateEntity"},
 		{name: "appMenu", kind: "AppMenu", components: [
+			{name: "help", caption: "Help", onclick: "btnHelp_Click"},
 			{name: "about", caption: "About", onclick: "btnAbout_Click"}
 		]},
 		{kind: "SlidingPane", name: "slidingPane", flex: 1, components: [
@@ -144,6 +146,9 @@ enyo.kind({
 		//When the application is loaded we need to check to see if it is a phone
 		if(Spinn.PhoneUtils.isPhone())
 		{ this.addClass("isPhone"); }
+	},
+	btnHelp_Click: function() {
+		this.$.theHelpDialog.openAtCenter();
 	},
 	btnAbout_Click: function() {
 		this.$.theAboutDialog.openAtCenter();

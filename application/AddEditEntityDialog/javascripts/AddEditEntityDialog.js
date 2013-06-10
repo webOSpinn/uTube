@@ -12,7 +12,7 @@ enyo.kind({
 		{kind: "Scroller", name:"theScroller", flex: 1, autoHorizontal: false, horizontal: false,
 			components: [
 				{kind: "RowGroup", caption: "YouTube ID:", components: [
-					{name: "uTubeId", kind: "Input", hint:"YouTube user or channel ID", autocorrect: false, onchange: "uTubeIdChanged"}
+					{name: "uTubeId", kind: "Input", hint:"User/Channel/Playlist ID", autocorrect: false, onchange: "uTubeIdChanged"}
 				]},
 				{kind: "RowGroup", caption: "Name:", components: [
 					{name: "name", kind: "Input", autocorrect: false, selectAllOnFocus: true, hint:"Enter display name"}

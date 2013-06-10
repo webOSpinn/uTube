@@ -5,6 +5,7 @@ enyo.depends(
 	"app/YouTubeApiV2.js",
 	"TimeLine/depends.js",
 	"AddEditEntityDialog/depends.js",
+	"HelpDialog/depends.js",
 	"app/YouTubeViewer.js",
 	"app/YouTubeVideoDetails.js",
 	"app/uTube.js"
