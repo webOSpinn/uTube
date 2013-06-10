@@ -1,3 +1,6 @@
 [submodule "application/Spinn"]
 	path = application/Spinn
 	url = git://github.com/webOSpinn/Spinn.git
+[submodule "application/YouTubeAPI"]
+	path = application/YouTubeAPI
+	url = git://github.com/webOSpinn/YouTubeAPI.git
