@@ -1,5 +1,5 @@
 enyo.kind({
-	name: "YouTubeApi",
+	name: "YouTubeApiV2",
 	kind: enyo.Component,
 	events: {
 	  onGetVideoSuccess: "",
@@ -38,13 +38,6 @@ enyo.kind({
 		this._getVideosRunning = true;
 		var url = "";
 		
-		if(Spinn.Utils.exists(startIndex) && Spinn.Utils.isInt(startIndex) && startIndex >= 1) {
-			this._GetVideos_StartIndex = startIndex;
-		} else {
-			this._GetVideos_StartIndex = 1;
-		}
-				
-		this._GetVideos_EntityType = entityType;
 		this._GetVideos_UserOrChannelOrPlaylistId = userOrChannelOrPlaylistId;
 		
 		switch(entityType)
@@ -63,73 +56,58 @@ enyo.kind({
         this.$.GetVideosWebService.call();
 	},
 	_GetVideosAnswer: function (inSender, inResponse) {
-		//Initialize the processed array on the first pass through
-		if(Spinn.Utils.exists(this._processedVideos) == false) {
-			this._processedVideos = new Array();
-		}
-		
-		var tempResults = new Array();
-		
-		//Get the count of videos
-		if(Spinn.Utils.exists(inResponse)
-			&& Spinn.Utils.exists(inResponse.feed)
-			&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults)
-			&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
+		try {
+			var tempResults = new Array();
+			var videosCount = 0;
 			
-			this._GetVideos_VideoCount = inResponse.feed.openSearch$totalResults.$t;
-		}
-		//If the start index is out of bounds no entries will be returned
-		if(Spinn.Utils.exists(inResponse)
-			&& Spinn.Utils.exists(inResponse.feed)
-			&& Spinn.Utils.exists(inResponse.feed.entry)) {
-			//Process the results
-			for (var i=0;i<inResponse.feed.entry.length;i++)
-			{
-				var tempTitle = "ERROR:No Video Title!";
-				var tempVideoId = null;
+			//Get the count of videos
+			if(Spinn.Utils.exists(inResponse)
+				&& Spinn.Utils.exists(inResponse.feed)
+				&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults)
+				&& Spinn.Utils.exists(inResponse.feed.openSearch$totalResults.$t)) {
 				
-				//Extract the video title
-				if(Spinn.Utils.exists(inResponse.feed.entry[i].title)
-					&& Spinn.Utils.exists(inResponse.feed.entry[i].title.$t)) {
-					tempTitle = inResponse.feed.entry[i].title.$t;
-				}
-				//Extract the videoId out of the array of links
-				for (var j=0;j<inResponse.feed.entry[j].link.length;j++) {
-					if(inResponse.feed.entry[i].link[j].rel == "alternate") {
-						tempVideoId = inResponse.feed.entry[i].link[j].href.replace('http://www.youtube.com/watch?v=','');
-						tempVideoId = tempVideoId.replace('&feature=youtube_gdata','');
-						break;
+				videosCount = inResponse.feed.openSearch$totalResults.$t;
+			}
+			//If the start index is out of bounds no entries will be returned
+			if(Spinn.Utils.exists(inResponse)
+				&& Spinn.Utils.exists(inResponse.feed)
+				&& Spinn.Utils.exists(inResponse.feed.entry)) {
+				//Process the results
+				for (var i=0;i<inResponse.feed.entry.length;i++)
+				{
+					var tempTitle = "ERROR:No Video Title!";
+					var tempVideoId = null;
+					
+					//Extract the video title
+					if(Spinn.Utils.exists(inResponse.feed.entry[i].title)
+						&& Spinn.Utils.exists(inResponse.feed.entry[i].title.$t)) {
+						tempTitle = inResponse.feed.entry[i].title.$t;
+					}
+					//Extract the videoId out of the array of links
+					for (var j=0;j<inResponse.feed.entry[j].link.length;j++) {
+						if(inResponse.feed.entry[i].link[j].rel == "alternate") {
+							tempVideoId = inResponse.feed.entry[i].link[j].href.replace('http://www.youtube.com/watch?v=','');
+							tempVideoId = tempVideoId.replace('&feature=youtube_gdata','');
+							break;
+						}
+					}
+					//Add the processed video to the temp array
+					if(Spinn.Utils.exists(tempVideoId)) {
+						var tempItem = {
+							title:tempTitle,
+							videoId:tempVideoId
+						};
+					
+						tempResults.push(tempItem);
 					}
 				}
-				//Add the processed video to the temp array
-				if(Spinn.Utils.exists(tempVideoId)) {
-					var tempItem = {
-						title:tempTitle,
-						videoId:tempVideoId
-					};
 				
-					tempResults.push(tempItem);
-				}
+				this.doGetVideoSuccess({Videos: tempResults, entity:{uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: videosCount}});
+			} else { //Return empty array
+				this.doGetVideoSuccess({Videos: tempResults, entity: {uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: 0}});
 			}
-			//Move the processed videos to the final array
-			this._processedVideos = this._processedVideos.concat(tempResults);
-			
-			//If I have retrieved less than 50 videos I know that I am at the end, otherwise request the next 50 videos
-			//if(tempResults.length < 50) {
-				try {
-					this.doGetVideoSuccess({Videos: this._processedVideos, entity:{uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: this._GetVideos_VideoCount}});
-				} finally {
-					this._CleanupGetVideosVars();
-				}
-			//} else {
-			//	this.getVideos(this._GetVideos_UserOrChannelOrPlaylistId, this._GetVideos_EntityType, (this._GetVideos_StartIndex + 50));
-			//}
-		} else { //Return empty array
-			try {
-				this.doGetVideoSuccess({Videos: this._processedVideos, entity: {uTubeId: this._GetVideos_UserOrChannelOrPlaylistId, numVideos: 0}});
-			} finally {
-				this._CleanupGetVideosVars();
-			}
+		} finally {
+			this._CleanupGetVideosVars();
 		}
     },
 	_GetVideosFail: function (inSender, inResponse) {
@@ -140,11 +118,7 @@ enyo.kind({
 		}
 	},
 	_CleanupGetVideosVars: function() {
-		this._processedVideos = null;
-		this._GetVideos_EntityType = null;
-		this._GetVideos_StartIndex = null;
 		this._GetVideos_UserOrChannelOrPlaylistId = null;
-		this._GetVideos_VideoCount = null;
 		this._getVideosRunning = false;
 	},
 	getVideoCount: function (userOrChannelOrPlaylistId, entityType) {

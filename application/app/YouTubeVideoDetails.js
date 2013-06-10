@@ -17,19 +17,17 @@ enyo.kind({
 			{kind: "YouTubeViewer", name: "vidViewer", showSuggestedVideos: false, style: "width: 640px; height: 360px;"}
 		]},
 		{name: "VideoTimeLine", kind: "TimeLine", maximum: 0, onChange: "timeLineChange"},
-		{kind: "HFlexBox", align:"center", pack:"center", components: [
-			{kind: "RowGroup", style: "width: 95%;", components: [
-				{kind: "HFlexBox", components: [
-					{name: "numViews", kind: "Spinn.IconLabel", iconSrc: "images/eye.png", caption: "", style: "width:50%;"},
-					{name: "likeDislike", kind: "HFlexBox", align:"center", pack:"left", style: "width:50%;", components: [
-						{name: "numLikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-up.png", caption: ""},
-						{name: "numDislikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-down.png", caption: ""}
-					]}
-				]},
-				{kind: "HFlexBox", components: [
-					{name: "duration", kind: "Spinn.IconLabel", iconSrc: "images/clock.png", caption: "", style: "width:50%;", },
-					{name: "dateUploaded", kind: "Spinn.IconLabel", iconSrc: "images/calendar.png", caption: "", style: "width:50%;", }
+		{kind: "RowGroup", components: [
+			{kind: "HFlexBox", components: [
+				{name: "numViews", kind: "Spinn.IconLabel", iconSrc: "images/eye.png", caption: "", style: "width:50%;"},
+				{name: "likeDislike", kind: "HFlexBox", align:"center", pack:"left", style: "width:50%;", components: [
+					{name: "numLikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-up.png", caption: ""},
+					{name: "numDislikes", kind: "Spinn.IconLabel", iconSrc: "images/thumbs-down.png", caption: ""}
 				]}
+			]},
+			{kind: "HFlexBox", components: [
+				{name: "duration", kind: "Spinn.IconLabel", iconSrc: "images/clock.png", caption: "", style: "width:50%;", },
+				{name: "dateUploaded", kind: "Spinn.IconLabel", iconSrc: "images/calendar.png", caption: "", style: "width:50%;", }
 			]}
 		]},
 		{kind: "RowGroup", name: "descriptionHeader", caption: "Description: ", components: [
@@ -49,7 +47,21 @@ enyo.kind({
 		this.videoIdChanged();
 	},
 	dateUploadedChanged: function() {
-		this.$.dateUploaded.setCaption(this.dateUploaded);
+		if(Spinn.Utils.exists(this.dateUploaded)
+			&& enyo.string.trim(this.dateUploaded) != "") {
+			var tempDate = new Date(this.dateUploaded);
+			var tempDateString = tempDate.toDateString();
+			
+			if(tempDate.getHours() > 12) {
+				tempDateString = tempDateString + " " + (tempDate.getHours() - 12) + ":" + tempDate.getMinutes() + ":" + tempDate.getSeconds() + " PM";
+			} else {
+				tempDateString = tempDateString + " " + tempDate.getHours() + ":" + tempDate.getMinutes() + ":" + tempDate.getSeconds() + " AM";
+			}
+			
+			this.$.dateUploaded.setCaption(tempDateString);
+		} else {
+			this.$.dateUploaded.setCaption("");
+		}
 	},
 	descriptionChanged: function() {
 		this.$.description.setContent(this.description);
@@ -85,8 +97,14 @@ enyo.kind({
 		var videoID = this.getVideoId();
 		//If no video is selected just go to main YouTube page
 		if(Spinn.Utils.exists(videoID) && (enyo.string.trim(videoID) != "")) {
-			var time = this.$.VideoTimeLine.getTime();
-			return "http://www.youtube.com/watch?v=" + this.getVideoId() + "#t=" + time.h + "h" + time.m + "m" + time.s + "s";
+			var tempUrl = "http://www.youtube.com/watch?v=" + this.getVideoId()
+			
+			if(this.$.VideoTimeLine.getPosition() > 0) {
+				var time = this.$.VideoTimeLine.getTime();
+				tempUrl = tempUrl + "#t=" + time.h + "h" + time.m + "m" + time.s + "s";
+			}
+			
+			return tempUrl; 
 		} else {
 			return "http://www.youtube.com/";
 		}

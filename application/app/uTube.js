@@ -14,7 +14,7 @@ enyo.kind({
 			subscribe : true
 		},
 		{
-			kind: "YouTubeApi", name: "YouTubeService",
+			kind: "YouTubeApiV2", name: "YouTubeService",
 			onGetVideoSuccess: "GetVideosAnswer",
 			onGetVideoCountSuccess: "GetVideoCountAnswer",
 			onGetVideoDetailsSuccess: "GetVideoDetailsAnswer",
@@ -173,7 +173,6 @@ enyo.kind({
 		});
 	},
 	addNewEntity: function(inSender, inResponse){
-		//this.$.videoDetails.hide();
 		this.$.addEditEntityDialog.openAtCenter();
 	},
 	editEntity: function(inSender, inResponse){
@@ -182,16 +181,13 @@ enyo.kind({
 		}
 	},
 	handleNewOrUpdateEntity: function(inSender, inEvent){
-		//this.$.videoDetails.show();
 		if(inEvent.mode == "Add") {
 			this.$.model.insertYouTubeEntity(inEvent.entity, this.bound.updateVideoCount);
 		} else {
 			this.$.model.updateYouTubeEntity(inEvent.entity.uTubeId, inEvent.entity, this.bound.updateVideoCount);
 		}
 	},
-	handleCancelNewOrUpdateEntity: function(inSender, inResponse){
-		//this.$.videoDetails.show();
-	},
+	handleCancelNewOrUpdateEntity: function(inSender, inResponse){/*Do nothing on cancel*/},
 	refreshVideoList_click: function(inSender, inResponse){
 		if(Spinn.Utils.exists(this.$.model.currentYouTubeEntity)){
 			//Clear the array of videos so we load a new one
@@ -330,8 +326,6 @@ enyo.kind({
 			
 			this.$.model.deleteYouTubeEntity(entityToDelete.uTubeId);
 		}
-		
-		
 	},
 	renderVideos: function (results) {
 		//Don't scroll to the top here because this also get triggered when the

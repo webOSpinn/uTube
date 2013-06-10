@@ -39,22 +39,25 @@ enyo.kind({
 	},
 	renderVideo: function() {
 		var vidUrl = ''
-		//Make sure that there is a video name supplied
-		if(Spinn.Utils.exists(this.videoId)) {
-			var temp = enyo.string.trim(this.videoId);
-			if(temp != "") {
-				vidUrl = 'http';
-				if(this.https == true){
-					vidUrl = vidUrl + 's';
-				}
-				vidUrl = vidUrl + '://www.youtube';
-				if(this.privacyEnhancedMode == true){
-					vidUrl = vidUrl + '-nocookie';
-				}
-				vidUrl = vidUrl + '.com/embed/' + this.getVideoId()
-				if(this.showSuggestedVideos == false){
-					vidUrl = vidUrl + '?rel=0'
-				}
+		//Make sure that there is a video ID supplied
+		if(Spinn.Utils.exists(this.videoId) 
+			&& (enyo.string.trim(this.videoId) != "")) {
+			
+			vidUrl = 'http';
+			if(this.https == true){
+				vidUrl = vidUrl + 's';
+			}
+			vidUrl = vidUrl + '://www.youtube';
+			if(this.privacyEnhancedMode == true){
+				vidUrl = vidUrl + '-nocookie';
+			}
+			vidUrl = vidUrl + '.com/embed/' + this.getVideoId()
+			if(this.showSuggestedVideos == false){
+				vidUrl = vidUrl + '?rel=0'
+			}
+			if(Spinn.Utils.exists(this.startTimeInSeconds) 
+				&& Spinn.Utils.isInt(this.startTimeInSeconds)
+				&& this.startTimeInSeconds > 0) {
 				vidUrl = vidUrl + '#t=' + this.startTimeInSeconds + 's'
 			}
 		}

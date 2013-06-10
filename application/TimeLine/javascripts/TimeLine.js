@@ -63,11 +63,13 @@ enyo.kind({
 	//Fired while sliding
 	sliderChanging: function(inSender, position) {
 		this.renderCaption();
+		this.position = position;
 		this.doChanging(position);
 	},
 	//Fired once user releases slider
 	sliderChange: function(inSender, position) {
 		this.renderCaption();
+		this.position = position;
 		this.doChange(position);
 	}
 })
