@@ -2,11 +2,7 @@ enyo.depends(
 	"Spinn/depends.js",
 	"app/database-enyo.js",
 	"app/YouTube-model.js",
-	"app/YouTubeApiV2.js",
-	"TimeLine/depends.js",
 	"AddEditEntityDialog/depends.js",
 	"HelpDialog/depends.js",
-	"app/YouTubeViewer.js",
-	"app/YouTubeVideoDetails.js",
 	"app/uTube.js"
 );

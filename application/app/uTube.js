@@ -14,7 +14,7 @@ enyo.kind({
 			subscribe : true
 		},
 		{
-			kind: "YouTubeApiV2", name: "YouTubeService",
+			kind: "YouTubeAPI.YouTubeApiV2", name: "YouTubeService",
 			onGetVideoSuccess: "GetVideosAnswer",
 			onGetVideoCountSuccess: "GetVideoCountAnswer",
 			onGetVideoDetailsSuccess: "GetVideoDetailsAnswer",
@@ -97,7 +97,7 @@ enyo.kind({
 						{kind: "Header", content: "Video Player"},
 						{kind: "Scroller", name:"detailScroller", flex: 1, autoHorizontal: false, horizontal: false, 
 							components: [
-								{kind: "YouTubeVideoDetails", name: "videoDetails"}
+								{kind: "YouTubeAPI.YouTubeVideoDetails", name: "videoDetails"}
 							]
 						},
 						{kind: "Toolbar",
