@@ -80,12 +80,17 @@ enyo.kind({
 								name: "fullscreenButton2",
 								kind: "GrabButton"
 							},
+							{flex:.95},
 							{
 								name: "refreshButton",
 								kind: "ToolButton",
 								icon: enyo.fetchAppRootPath() + "images/menu-icon-sync.png",
 								onclick: "refreshVideoList_click"
-							}]
+							},
+							{kind: "ToolButtonGroup", flex:1, components: [
+								{kind: enyo.Spinner, name: "videoListSpinner", style:"margin-left:85px;"}
+							]}
+							]
 						}
 					]}
 					
@@ -201,6 +206,7 @@ enyo.kind({
 		}
 	},
 	GetVideosAnswer: function (inSender, inResponse){
+		this.$.videoListSpinner.hide();
 		if(Spinn.Utils.exists(this.videos)
 			&& Spinn.Utils.exists(this.videos[inResponse.entity.uTubeId])){
 			this.videos[inResponse.entity.uTubeId] = this.videos[inResponse.entity.uTubeId].concat(inResponse.Videos);
@@ -247,7 +253,12 @@ enyo.kind({
 		}
 		this.$.videoDetails.setVideoId(inResponse.uTubeId);
 	},
-	YouTubeFail: function (inSender, inResponse){/*Do nothing on fail*/},
+	YouTubeFail: function (inSender, inResponse)
+	{
+		if(inReponse.source == "GetVideoFail") {
+			this.$.videoListSpinner.hide();
+		}
+	},
 	renderYouTubeEntities: function () {
 		//Scroll the entity list back to the top
 		//this.$.entityListScroller.scrollTo(0,0);
@@ -364,6 +375,7 @@ enyo.kind({
 					if(this.$.YouTubeService.getVideosRunning() == false) {
 						// get it from a service
 						this.$.YouTubeService.getVideos(this.$.model.currentYouTubeEntity.uTubeId, this.$.model.currentYouTubeEntity.entityType, (index + 1));
+						this.$.videoListSpinner.show();
 					} else {
 						console.log("Get Videos already running!");
 					}
