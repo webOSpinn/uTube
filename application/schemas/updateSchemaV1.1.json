@@ -1,0 +1,9 @@
+[
+	{
+		"table": "favorites",
+		"columns": [
+			{ "column": "videoId", "type": "TEXT", "constraints": ["PRIMARY KEY"] },
+			{ "column": "title", "type": "TEXT" }
+		]
+	}
+]

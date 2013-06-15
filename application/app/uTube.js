@@ -276,6 +276,9 @@ enyo.kind({
 					this.$.entityItem.setIconSrc("images/channel.png");
 				} else if (r.entityType == "Playlist") {
 					this.$.entityItem.setIconSrc("images/playlist.png");
+				} else if (r.entityType == "Starred") {
+					this.$.entityItem.setIconSrc("images/starred.png");
+					this.$.entityItem.setSwipeable(false);
 				}
 				
 				//If the item being rendered is what was selected before, reselect it

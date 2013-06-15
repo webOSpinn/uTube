@@ -17,6 +17,7 @@ enyo.kind({
 		this.runningQuery = false;
 		this.youTubeEntitiesUpdatedCallback = null;
 		this.youTubeEntitiesColumns = ["uTubeId", "name", "entityType", "numVideos"];
+		this.favoritesColumns = ["videoId", "title"];
 		this.bound = {
 			finishFirstRun: enyo.bind(this, this.finishFirstRun),
 			refreshYouTubeEntities: enyo.bind(this, this.refreshYouTubeEntities),
@@ -26,9 +27,10 @@ enyo.kind({
 	},
 	create: function () {
 		this.inherited(arguments);
-		this.currentVersion = "1.0";
 		if (!localStorage["utube.firstRun"] && !this.runningQuery) {
 			this.populateDatabase()
+		} else {
+			this.updateDatabase();
 		}
 	},
 	populateDatabase: function () {
@@ -39,9 +41,21 @@ enyo.kind({
 	},
 	finishFirstRun: function () {
 		localStorage["utube.firstRun"] = "true";
-		this.$.db.changeVersion(this.currentVersion);
+		this.$.db.changeVersion("1.0");
 		this.runningQuery = false;
-		this.refreshYouTubeEntities()
+		this.updateDatabase();
+	},
+	updateDatabase: function () {
+		var currentDbVersion = this.$.db.getVersion();
+		this.runningQuery = true;
+		
+		if(currentDbVersion == "1.0") {
+			currentDbVersion = "1.1";
+			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json");
+		}
+		
+		this.runningQuery = false;
+		this.refreshYouTubeEntities();
 	},
 	databaseError: function (er) {
 		this.runningQuery = false;
@@ -69,6 +83,7 @@ enyo.kind({
 		}
 	},
 	getYouTubeEntitiesSelect: function (){
+		var favoritesSql = "SELECT 'Starred' entityType, 'Starred' name, 'Starred' uTubeId, agg.cnt numVideos FROM (SELECT count(*) cnt FROM favorites) agg";
 		var command = {
 			sql: "SELECT " + this.youTubeEntitiesColumns.join(", ") + " FROM youTubeEntities ORDER BY name",
 			values: []
@@ -77,6 +92,12 @@ enyo.kind({
 	},
 	onYouTubeEntityQuerySuccess: function(result) {
 		this.currentYouTubeEntities = result;
+		this.currentYouTubeEntities.unshift({
+			entityType: "Starred",
+			name: "Starred",
+			numVideos: 0,
+			uTubeId: "Starred"
+		});
 		this.runningQuery = false;
 		//Call the callback if it exists
 		if (this.youTubeEntitiesUpdatedCallback !== null) {
