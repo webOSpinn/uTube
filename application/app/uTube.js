@@ -115,6 +115,12 @@ enyo.kind({
 								kind: "ToolButton",
 								icon: enyo.fetchAppRootPath() + "images/menu-icon-share.png",
 								onclick: "btnShare_Click"
+							},
+							{
+								name: "favButton",
+								kind: "ToolButton",
+								caption: "Star",
+								onclick: "btnFav_Click"
 							}]
 						}
 					]}
@@ -137,7 +143,8 @@ enyo.kind({
 		}
 		this.bound = {
 			renderYouTubeEntities: enyo.bind(this, this.renderYouTubeEntities),
-			updateVideoCount: enyo.bind(this, this.updateVideoCount)
+			updateVideoCount: enyo.bind(this, this.updateVideoCount),
+			favoritesLoaded: enyo.bind(this, this.favoritesLoaded)
 		}
 		this.videos = new Object();
 	},
@@ -146,6 +153,7 @@ enyo.kind({
 		enyo.application.model = this.$.model;
 		this.$.model.setYouTubeEntitiesUpdatedCallback(this.bound.renderYouTubeEntities);
 		this.$.model.refreshYouTubeEntities();
+		this.$.model.setFavoritesUpdatedCallback(this.bound.favoritesLoaded);
 	},
 	loaded: function (inSender) {
 		//When the application is loaded we need to check to see if it is a phone
@@ -164,10 +172,26 @@ enyo.kind({
 			"params": { "target": this.$.videoDetails.getVideoUrl() }
 		});
 	},
+	btnFav_Click: function(inSender) {
+		var currentVideoId = this.$.videoDetails.getVideoId();
+		if(Spinn.Utils.exists(currentVideoId) 
+			&& enyo.string.trim(currentVideoId) !== "") {
+			if(!this._favoriteExists(currentVideoId)) {
+				this.$.model.insertFavorite({videoId: currentVideoId, title: this.$.videoDetails.getTitle()});
+				this.$.model.refreshFavorites();
+				this.$.favButton.setCaption("Unstar");
+			} else {
+				this.$.model.deleteFavorite(currentVideoId);
+				this.$.model.refreshFavorites();
+				this.$.favButton.setCaption("Star");
+			}
+		}
+	},
 	btnOpenEntityInBrowser_Click: function(inSender) {
 		var url = "http://www.youtube.com/";
 		//If nothing is selected just go to main YouTube page
-		if(Spinn.Utils.exists(this.$.model.currentYouTubeEntity)) {
+		if(Spinn.Utils.exists(this.$.model.currentYouTubeEntity)
+			&& this.$.model.currentYouTubeEntity.entityType != "Favorite") {
 			if(this.$.model.currentYouTubeEntity.entityType == "User") {
 				url = url + "user/" + this.$.model.currentYouTubeEntity.uTubeId;
 			} else if (this.$.model.currentYouTubeEntity.entityType == "Channel") {
@@ -186,7 +210,8 @@ enyo.kind({
 		this.$.addEditEntityDialog.openAtCenter();
 	},
 	editEntity: function(inSender, inResponse){
-		if(Spinn.Utils.exists(this.$.model.currentYouTubeEntity)){
+		if(Spinn.Utils.exists(this.$.model.currentYouTubeEntity)
+			&& this.$.model.currentYouTubeEntity.entityType != "Favorite"){
 			this.$.addEditEntityDialog.openAtCenter(this.$.model.currentYouTubeEntity);
 		}
 	},
@@ -252,12 +277,25 @@ enyo.kind({
 			}
 		}
 		this.$.videoDetails.setVideoId(inResponse.uTubeId);
+		
+		if(this._favoriteExists(inResponse.uTubeId)) {
+			this.$.favButton.setCaption("Unstar");
+		} else {
+			this.$.favButton.setCaption("Star");
+		}
 	},
 	YouTubeFail: function (inSender, inResponse)
 	{
 		if(inReponse.source == "GetVideoFail") {
 			this.$.videoListSpinner.hide();
 		}
+	},
+	favoritesLoaded: function (result) {
+		this.$.videoListSpinner.hide();
+		
+		this.videos['Favorite'] = result;
+		this.$.model.updateYouTubeEntity('Favorite', {numVideos: result.length});
+		this.renderVideos();
 	},
 	renderYouTubeEntities: function () {
 		//Scroll the entity list back to the top
@@ -276,7 +314,7 @@ enyo.kind({
 					this.$.entityItem.setIconSrc("images/channel.png");
 				} else if (r.entityType == "Playlist") {
 					this.$.entityItem.setIconSrc("images/playlist.png");
-				} else if (r.entityType == "Starred") {
+				} else if (r.entityType == "Favorite") {
 					this.$.entityItem.setIconSrc("images/starred.png");
 					this.$.entityItem.setSwipeable(false);
 				}
@@ -375,12 +413,17 @@ enyo.kind({
 			if((index < this.$.model.currentYouTubeEntity.numVideos) || (this.$.model.currentYouTubeEntity.numVideos == 0)) {
 				// if we don't have data for this page...
 				if (!this.videos[this.$.model.currentYouTubeEntity.uTubeId][index]) {
-					if(this.$.YouTubeService.getVideosRunning() == false) {
-						// get it from a service
-						this.$.YouTubeService.getVideos(this.$.model.currentYouTubeEntity.uTubeId, this.$.model.currentYouTubeEntity.entityType, (index + 1));
+					if (this.$.model.currentYouTubeEntity.entityType == "Favorite") {
+						this.$.model.refreshFavorites();
 						this.$.videoListSpinner.show();
 					} else {
-						console.log("Get Videos already running!");
+						if(this.$.YouTubeService.getVideosRunning() == false) {
+							// get it from a service
+							this.$.YouTubeService.getVideos(this.$.model.currentYouTubeEntity.uTubeId, this.$.model.currentYouTubeEntity.entityType, (index + 1));
+							this.$.videoListSpinner.show();
+						} else {
+							console.log("Get Videos already running!");
+						}
 					}
 				}
 			}
@@ -406,5 +449,18 @@ enyo.kind({
 			else
 			{ this.$.slidingPane.selectView(this.$.videosPane); }
 		}
+	},
+	_favoriteExists: function(videoId) {
+		var result = false;
+		if(this.videos['Favorite']) {
+			for(var i = 0; i < this.videos['Favorite'].length; i++) {
+				if(this.videos['Favorite'][i].videoId == videoId) {
+					result = true;
+					break;
+				}
+			}
+		}
+		
+		return result;
 	}
 });

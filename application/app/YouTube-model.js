@@ -16,19 +16,21 @@ enyo.kind({
 		this.currentYouTubeEntities = null;
 		this.runningQuery = false;
 		this.youTubeEntitiesUpdatedCallback = null;
+		this.favoritesUpdatedCallback = null;
 		this.youTubeEntitiesColumns = ["uTubeId", "name", "entityType", "numVideos"];
 		this.favoritesColumns = ["videoId", "title"];
 		this.bound = {
 			finishFirstRun: enyo.bind(this, this.finishFirstRun),
 			refreshYouTubeEntities: enyo.bind(this, this.refreshYouTubeEntities),
 			onYouTubeEntityQuerySuccess: enyo.bind(this, this.onYouTubeEntityQuerySuccess),
-			databaseError: enyo.bind(this, this.databaseError)
+			databaseError: enyo.bind(this, this.databaseError),
+			onFavoriteQuerySuccess: enyo.bind(this, this.onFavoriteQuerySuccess)
 		}
 	},
 	create: function () {
 		this.inherited(arguments);
 		if (!localStorage["utube.firstRun"] && !this.runningQuery) {
-			this.populateDatabase()
+			this.populateDatabase();
 		} else {
 			this.updateDatabase();
 		}
@@ -61,9 +63,9 @@ enyo.kind({
 		this.runningQuery = false;
 		if (er.code === 1) {
 			this.error("Database error (" + er.code + "): " + er.message);
-			this.populateDatabase()
+			this.populateDatabase();
 		} else {
-			this.error("Database error (" + er.code + "): " + er.message)
+			this.error("Database error (" + er.code + "): " + er.message);
 		}
 	},
 	
@@ -78,12 +80,11 @@ enyo.kind({
 					onError: this.bound.databaseError
 				})
 			} catch (ex) {
-				this.warn("Exception: " + ex)
+				this.warn("Exception: " + ex);
 			}
 		}
 	},
 	getYouTubeEntitiesSelect: function (){
-		var favoritesSql = "SELECT 'Starred' entityType, 'Starred' name, 'Starred' uTubeId, agg.cnt numVideos FROM (SELECT count(*) cnt FROM favorites) agg";
 		var command = {
 			sql: "SELECT " + this.youTubeEntitiesColumns.join(", ") + " FROM youTubeEntities ORDER BY name",
 			values: []
@@ -92,23 +93,24 @@ enyo.kind({
 	},
 	onYouTubeEntityQuerySuccess: function(result) {
 		this.currentYouTubeEntities = result;
-		this.currentYouTubeEntities.unshift({
-			entityType: "Starred",
-			name: "Starred",
-			numVideos: 0,
-			uTubeId: "Starred"
-		});
+		for(var i = 0; i < this.currentYouTubeEntities.length; i++) {
+			if(this.currentYouTubeEntities[i].uTubeId == "Favorite") {
+				//Shift favorite to the beginning
+				this.currentYouTubeEntities.unshift(this.currentYouTubeEntities.splice(i,1)[0]);
+				break;
+			}
+		}
 		this.runningQuery = false;
 		//Call the callback if it exists
 		if (this.youTubeEntitiesUpdatedCallback !== null) {
-			this.youTubeEntitiesUpdatedCallback(this.currentYouTubeEntities)
+			this.youTubeEntitiesUpdatedCallback(this.currentYouTubeEntities);
 		}
 	},
 	setYouTubeEntitiesUpdatedCallback: function (a) {
-		this.youTubeEntitiesUpdatedCallback = a
+		this.youTubeEntitiesUpdatedCallback = a;
 	},
 	clearYouTubeEntitiesUpdatedCallback: function () {
-		this.youTubeEntitiesUpdatedCallback = null
+		this.youTubeEntitiesUpdatedCallback = null;
 	},
 	insertYouTubeEntity: function (data, callback) {
 		var b = this.$.db.getInsert("youTubeEntities", data);
@@ -119,7 +121,7 @@ enyo.kind({
 	_insertYouTubeEntityFinished: function (data, callback) {
 		this.refreshYouTubeEntities();
 		if (Spinn.Utils.exists(callback)) {
-			callback(data)
+			callback(data);
 		}
 	},
 	getYouTubeEntity: function (id, callback) {
@@ -132,9 +134,9 @@ enyo.kind({
 	},
 	_getYouTubeEntityFinish: function (callback, a) {
 		if (enyo.isArray(a)) {
-			a = a[0]
+			a = a[0];
 		}
-		callback(a)
+		callback(a);
 	},
 	updateYouTubeEntity: function (id, value, callback) {
 		var sqlCommand = this.$.db.getUpdate("youTubeEntities", value, {
@@ -147,10 +149,10 @@ enyo.kind({
 	_updateYouTubeEntityFinished: function (id, callback) {
 		this.refreshYouTubeEntities();
 		if (id === null) {
-			id = this.$.db.lastInsertID()
+			id = this.$.db.lastInsertID();
 		}
 		if (Spinn.Utils.exists(callback)) {
-			callback(id)
+			callback(id);
 		}
 	},
 	deleteYouTubeEntity: function (id, callBack) {
@@ -164,8 +166,71 @@ enyo.kind({
 	_deleteYouTubeEntityFinish: function (id, callBack) {
 		this.refreshYouTubeEntities();
 		if (Spinn.Utils.exists(callBack)) {
-			callBack()
+			callBack();
+		}
+	},
+	/*End YouTubeEntities code*/
+	
+	/*Start Favorites code*/
+	refreshFavorites: function () {
+		if(this.favoritesUpdatedCallback !== null && !this.runningQuery) {
+			try{
+				var query = this.getFavoritesSelect();
+				this.runningQuery = true;
+				this.$.db.query(query, {
+					onSuccess: this.bound.onFavoriteQuerySuccess,
+					onError: this.bound.databaseError
+				})
+			} catch (ex) {
+				this.warn("Exception: " + ex);
+			}
+		}
+	},
+	getFavoritesSelect: function (){
+		var command = {
+			sql: "SELECT " + this.favoritesColumns.join(", ") + " FROM favorites",
+			values: []
+		};
+		return command;
+	},
+	onFavoriteQuerySuccess: function(result) {
+		this.runningQuery = false;
+		//Call the callback if it exists
+		if (this.favoritesUpdatedCallback !== null) {
+			this.favoritesUpdatedCallback(result);
+		}
+	},
+	setFavoritesUpdatedCallback: function (a) {
+		this.favoritesUpdatedCallback = a;
+	},
+	clearFavoritesUpdatedCallback: function () {
+		this.favoritesUpdatedCallback = null;
+	},
+	insertFavorite: function (data, callback) {
+		var b = this.$.db.getInsert("favorites", data);
+		this.$.db.query(b, {
+			onSuccess: enyo.bind(this, this._insertFavoriteFinished, data, callback)
+		})
+	},
+	_insertFavoriteFinished: function (data, callback) {
+		this.refreshFavorites();
+		if (Spinn.Utils.exists(callback)) {
+			callback(data);
+		}
+	},
+	deleteFavorite: function (id, callBack) {
+		var deleteCommand = this.$.db.getDelete("favorites", {
+			videoId: id
+		});
+		this.$.db.query(deleteCommand, {
+			onSuccess: enyo.bind(this, this._deleteFavoriteFinish, id, callBack)
+		})
+	},
+	_deleteFavoriteFinish: function (id, callBack) {
+		this.refreshFavorites();
+		if (Spinn.Utils.exists(callBack)) {
+			callBack();
 		}
 	}
-	/*End YouTubeEntities code*/
+	/*End Favorites code*/
 });
