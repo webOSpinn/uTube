@@ -1,4 +1,5 @@
 enyo.depends(
+	"stylesheets/style.css",
 	"Spinn/depends.js",
 	"YouTubeAPI/depends.js",
 	"app/database-enyo.js",

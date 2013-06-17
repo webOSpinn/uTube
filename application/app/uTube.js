@@ -119,7 +119,7 @@ enyo.kind({
 							{
 								name: "favButton",
 								kind: "ToolButton",
-								caption: "Star",
+								icon: enyo.fetchAppRootPath() + "images/menu-icon-unfav.png",
 								onclick: "btnFav_Click"
 							}]
 						}
@@ -179,11 +179,11 @@ enyo.kind({
 			if(!this._favoriteExists(currentVideoId)) {
 				this.$.model.insertFavorite({videoId: currentVideoId, title: this.$.videoDetails.getTitle()});
 				this.$.model.refreshFavorites();
-				this.$.favButton.setCaption("Unstar");
+				this.$.favButton.setIcon(enyo.fetchAppRootPath() + "images/menu-icon-fav.png");
 			} else {
 				this.$.model.deleteFavorite(currentVideoId);
 				this.$.model.refreshFavorites();
-				this.$.favButton.setCaption("Star");
+				this.$.favButton.setIcon(enyo.fetchAppRootPath() + "images/menu-icon-unfav.png");
 			}
 		}
 	},
@@ -279,9 +279,9 @@ enyo.kind({
 		this.$.videoDetails.setVideoId(inResponse.uTubeId);
 		
 		if(this._favoriteExists(inResponse.uTubeId)) {
-			this.$.favButton.setCaption("Unstar");
+			this.$.favButton.setIcon(enyo.fetchAppRootPath() + "images/menu-icon-fav.png");
 		} else {
-			this.$.favButton.setCaption("Star");
+			this.$.favButton.setIcon(enyo.fetchAppRootPath() + "images/menu-icon-unfav.png");
 		}
 	},
 	YouTubeFail: function (inSender, inResponse)
@@ -339,7 +339,7 @@ enyo.kind({
 				this.$.model.currentYouTubeEntity = entity;
 				
 				//clear the selected video item in the list - as we will be looking at a new list
-				this.$.videoList.clearSelection();
+				//this.$.videoList.clearSelection();
 				this.refreshVideoList(entity);
 			}
 			//Always go to the video list pane on a phone
@@ -401,6 +401,12 @@ enyo.kind({
 				//If the item being rendered is what was selected before, reselect it
 				if(inSender.getSelectedID() == r.videoId) {
 					inSender.setItemToSelect(inIndex, r.videoId);
+				}
+				
+				if(this._favoriteExists(r.videoId)) {
+					this.$.videoName.addClass("favorite-video");
+				} else { 
+					this.$.videoName.removeClass("favorite-video");
 				}
 				return true;
 			}

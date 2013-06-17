@@ -92,6 +92,7 @@ enyo.kind({
 		return command;
 	},
 	onYouTubeEntityQuerySuccess: function(result) {
+		this.runningQuery = false;
 		this.currentYouTubeEntities = result;
 		for(var i = 0; i < this.currentYouTubeEntities.length; i++) {
 			if(this.currentYouTubeEntities[i].uTubeId == "Favorite") {
@@ -100,7 +101,6 @@ enyo.kind({
 				break;
 			}
 		}
-		this.runningQuery = false;
 		//Call the callback if it exists
 		if (this.youTubeEntitiesUpdatedCallback !== null) {
 			this.youTubeEntitiesUpdatedCallback(this.currentYouTubeEntities);
