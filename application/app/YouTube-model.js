@@ -24,7 +24,8 @@ enyo.kind({
 			refreshYouTubeEntities: enyo.bind(this, this.refreshYouTubeEntities),
 			onYouTubeEntityQuerySuccess: enyo.bind(this, this.onYouTubeEntityQuerySuccess),
 			databaseError: enyo.bind(this, this.databaseError),
-			onFavoriteQuerySuccess: enyo.bind(this, this.onFavoriteQuerySuccess)
+			onFavoriteQuerySuccess: enyo.bind(this, this.onFavoriteQuerySuccess),
+			updateDatabase: enyo.bind(this, this.updateDatabase)
 		}
 	},
 	create: function () {
@@ -47,17 +48,28 @@ enyo.kind({
 		this.runningQuery = false;
 		this.updateDatabase();
 	},
+	//This function is recursive - after each update it will fire again and look for anymore updates
 	updateDatabase: function () {
 		var currentDbVersion = this.$.db.getVersion();
+		var updated = false;
 		this.runningQuery = true;
 		
 		if(currentDbVersion == "1.0") {
+			updated = true;
 			currentDbVersion = "1.1";
-			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json");
+			//NOTE: had to fix glitch with changeVersionWithSchemaFromUrl in onecrayon.Database so the options 
+			//are passed and the success and failure callbacks can be executed
+			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
+				onSuccess: this.bound.updateDatabase,
+				onError: this.bound.databaseError
+			})
 		}
 		
 		this.runningQuery = false;
-		this.refreshYouTubeEntities();
+		//When update is false we know that we have hit the end of the recursion - database upgrade is complete
+		if(updated == false) {
+			this.refreshYouTubeEntities();
+		}
 	},
 	databaseError: function (er) {
 		this.runningQuery = false;

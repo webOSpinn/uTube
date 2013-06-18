@@ -533,7 +533,7 @@ enyo.kind({
 	 * specified in the schema JSON file located at `url`
 	 */
 	changeVersionWithSchemaFromUrl: function(newVersion, url, options) {
-		this._readUrl(url, enyo.bind(this, this.changeVersionWithSchema, newVersion));
+		this._readUrl(url, enyo.bind(this, this.changeVersionWithSchema, newVersion), options);
 	},
 	
 	
