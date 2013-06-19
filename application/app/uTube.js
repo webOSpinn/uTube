@@ -154,6 +154,7 @@ enyo.kind({
 		this.$.model.setYouTubeEntitiesUpdatedCallback(this.bound.renderYouTubeEntities);
 		this.$.model.refreshYouTubeEntities();
 		this.$.model.setFavoritesUpdatedCallback(this.bound.favoritesLoaded);
+		this.$.model.refreshFavorites();
 	},
 	loaded: function (inSender) {
 		//When the application is loaded we need to check to see if it is a phone

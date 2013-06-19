@@ -65,9 +65,9 @@ enyo.kind({
 			})
 		}
 		
-		this.runningQuery = false;
 		//When update is false we know that we have hit the end of the recursion - database upgrade is complete
 		if(updated == false) {
+			this.runningQuery = false;
 			this.refreshYouTubeEntities();
 		}
 	},
@@ -185,7 +185,7 @@ enyo.kind({
 	
 	/*Start Favorites code*/
 	refreshFavorites: function () {
-		if(this.favoritesUpdatedCallback !== null && !this.runningQuery) {
+		if(this.favoritesUpdatedCallback !== null/* && !this.runningQuery*/) {
 			try{
 				var query = this.getFavoritesSelect();
 				this.runningQuery = true;
