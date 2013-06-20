@@ -185,7 +185,7 @@ enyo.kind({
 	
 	/*Start Favorites code*/
 	refreshFavorites: function () {
-		if(this.favoritesUpdatedCallback !== null/* && !this.runningQuery*/) {
+		if(this.favoritesUpdatedCallback !== null && !this.runningQuery) {
 			try{
 				var query = this.getFavoritesSelect();
 				this.runningQuery = true;
