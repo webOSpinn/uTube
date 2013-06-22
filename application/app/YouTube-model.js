@@ -1,6 +1,10 @@
 enyo.kind({
 	name: "utube.YouTubeModel",
 	kind: enyo.Component,
+	published: {
+		youTubeEntitiesUpdatedCallback: null,
+		favoritesUpdatedCallback: null
+	},
 	components: [
 		{
 			name: "db",
@@ -16,35 +20,42 @@ enyo.kind({
 		this.currentYouTubeEntity = null;
 		this.currentYouTubeEntities = null;
 		this._runningQuery = false;
-		this.youTubeEntitiesUpdatedCallback = null;
-		this.favoritesUpdatedCallback = null;
 		this.youTubeEntitiesColumns = ["uTubeId", "name", "entityType", "numVideos"];
 		this.favoritesColumns = ["videoId", "title"];
 		this.bound = {
 			_processWorkQueue: enyo.bind(this, this._processWorkQueue),
 			_databaseError: enyo.bind(this, this._databaseError),
-			_finishFirstRun: enyo.bind(this, this._finishFirstRun),
-			_updateDatabase: enyo.bind(this, this._updateDatabase),
 			_lookForMoreWork: enyo.bind(this, this._lookForMoreWork)
 		}
 	},
 	create: function () {
 		this.inherited(arguments);
 		if (!localStorage["utube.firstRun"]) {
-			this._populateDatabase();
+			this._createWorkItemAtStart(enyo.bind(this, this._populateDatabase_worker));
 		} else {
-			this._updateDatabase();
+			this._createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
+		}
+	},
+	_createWorkItem: function(workItem) {
+		if(!this._runningQuery && this._workQueue.length == 0) {
+			workItem();
+		} else {
+			this._workQueue.push(workItem);
+		}
+	},
+	_createWorkItemAtStart: function(workItem) {
+		if(!this._runningQuery && this._workQueue.length == 0) {
+			workItem();
+		} else {
+			this._workQueue.splice(0,0,workItem);
 		}
 	},
 	_processWorkQueue: function() {
 		//If we have any work to do
 		if(this._workQueue.length > 0) {
 			//Grab the next item from the list
-			var item = this._workQueue.splice(0,1)[0];
-			//http://odetocode.com/Blogs/scott/archive/2007/07/05/function-apply-and-function-call-in-javascript.aspx
-			//http://viralpatel.net/blogs/calling-javascript-function-from-string/
-			//http://stackoverflow.com/questions/2856059/passing-an-array-as-a-function-parameter-in-javascript
-			item.func.apply(this, item.args);
+			var workItem = this._workQueue.splice(0,1)[0];
+			workItem();
 		}
 	},
 	_lookForMoreWork: function () {
@@ -66,53 +77,49 @@ enyo.kind({
 			this.bound._lookForMoreWork();
 		}
 	},
-	_populateDatabase: function () {
+	_populateDatabase_worker: function () {
 		this._runningQuery = true;
 		this.$.db.setSchemaFromURL("schemas/schema.json", {
-			onSuccess: this.bound._finishFirstRun,
+			onSuccess: enyo.bind(this, this._finishFirstRun),
 			onError: this.bound._databaseError
 		})
 	},
 	_finishFirstRun: function () {
-		localStorage["utube.firstRun"] = "true";
-		this.$.db.changeVersion("1.0");
-		this._runningQuery = false;
-		this._updateDatabase();
+		try {
+			localStorage["utube.firstRun"] = "true";
+			this.$.db.changeVersion("1.0");
+			this._createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
+		} finally {
+			this.bound._lookForMoreWork();
+		}
 	},
 	//This function is recursive - after each update it will fire again and look for anymore updates
-	_updateDatabase: function () {
-		var currentDbVersion = this.$.db.getVersion();
-		var updated = false;
-		this._runningQuery = true;
-		
-		if(currentDbVersion == "1.0") {
-			updated = true;
-			currentDbVersion = "1.1";
-			//NOTE: had to fix glitch with changeVersionWithSchemaFromUrl in onecrayon.Database so the options 
-			//are passed and the success and failure callbacks can be executed
-			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
-				onSuccess: this.bound._updateDatabase,
-				onError: this.bound._databaseError
-			})
-		}
-		
-		//When update is false we know that we have hit the end of the recursion - database upgrade is complete
-		if(updated == false) {
-			this._runningQuery = false;
-			this.refreshYouTubeEntities();
+	_updateDatabase_worker: function () {
+		try {
+			var currentDbVersion = this.$.db.getVersion();
+			var updated = false;
+			this._runningQuery = true;
+			
+			//Only do one update per loop
+			if(currentDbVersion == "1.0" && updated != true) {
+				updated = true;
+				currentDbVersion = "1.1";
+				//NOTE: had to fix glitch with changeVersionWithSchemaFromUrl in onecrayon.Database so the options 
+				//are passed and the success and failure callbacks can be executed
+				this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
+					onSuccess: enyo.bind(this, this._createWorkItemAtStart, enyo.bind(this, this._updateDatabase_worker)),
+					onError: this.bound._databaseError
+				})
+			}
+
+		} finally {
+			this.bound._lookForMoreWork();
 		}
 	},
 	
 	/*Start YouTubeEntities code*/
 	refreshYouTubeEntities: function () {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._refreshYouTubeEntities_worker();
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._refreshYouTubeEntities_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._refreshYouTubeEntities_worker));
 	},
 	_refreshYouTubeEntities_worker: function () {
 		if(this.youTubeEntitiesUpdatedCallback !== null) {
@@ -149,21 +156,8 @@ enyo.kind({
 			this.bound._lookForMoreWork();
 		}
 	},
-	setYouTubeEntitiesUpdatedCallback: function (a) {
-		this.youTubeEntitiesUpdatedCallback = a;
-	},
-	clearYouTubeEntitiesUpdatedCallback: function () {
-		this.youTubeEntitiesUpdatedCallback = null;
-	},
 	insertYouTubeEntity: function (data, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._insertYouTubeEntity_worker(data, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._insertYouTubeEntity_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._insertYouTubeEntity_worker, data, callback));
 	},
 	_insertYouTubeEntity_worker: function (data, callback) {
 		this._runningQuery = true;
@@ -175,7 +169,7 @@ enyo.kind({
 	},
 	_insertYouTubeEntityFinished: function (data, callback) {
 		try {
-			this.refreshYouTubeEntities();
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
@@ -184,14 +178,7 @@ enyo.kind({
 		}
 	},
 	getYouTubeEntity: function (id, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._getYouTubeEntity_worker(id, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._getYouTubeEntity_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._getYouTubeEntity_worker, id, callback));
 	},
 	_getYouTubeEntity_worker: function (id, callback) {
 		this._runningQuery = true;
@@ -214,14 +201,7 @@ enyo.kind({
 		}
 	},
 	updateYouTubeEntity: function (id, value, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._updateYouTubeEntity_worker(id, value, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._updateYouTubeEntity_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._updateYouTubeEntity_worker, id, value, callback));
 	},
 	_updateYouTubeEntity_worker: function (id, value, callback) {
 		this._runningQuery = true;
@@ -235,7 +215,7 @@ enyo.kind({
 	},
 	_updateYouTubeEntityFinished: function (id, callback) {
 		try {
-			this.refreshYouTubeEntities();
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (id === null) {
 				id = this.$.db.lastInsertID();
 			}
@@ -247,14 +227,7 @@ enyo.kind({
 		}
 	},
 	deleteYouTubeEntity: function (id, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._deleteYouTubeEntity_worker(id, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._deleteYouTubeEntity_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._deleteYouTubeEntity_worker, id, callback));
 	},
 	_deleteYouTubeEntity_worker: function (id, callback) {
 		this._runningQuery = true;
@@ -268,7 +241,7 @@ enyo.kind({
 	},
 	_deleteYouTubeEntityFinish: function (id, callback) {
 		try {
-			this.refreshYouTubeEntities();
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
@@ -280,14 +253,7 @@ enyo.kind({
 	
 	/*Start Favorites code*/
 	refreshFavorites: function () {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._refreshFavorites_worker();
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._refreshFavorites_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._refreshFavorites_worker));
 	},
 	_refreshFavorites_worker: function () {
 		if(this.favoritesUpdatedCallback !== null) {
@@ -316,21 +282,8 @@ enyo.kind({
 			this.bound._lookForMoreWork();
 		}
 	},
-	setFavoritesUpdatedCallback: function (a) {
-		this.favoritesUpdatedCallback = a;
-	},
-	clearFavoritesUpdatedCallback: function () {
-		this.favoritesUpdatedCallback = null;
-	},
 	insertFavorite: function (data, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._insertFavorite_worker(data, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._insertFavorite_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._insertFavorite_worker, data, callback));
 	},
 	_insertFavorite_worker: function (data, callback) {
 		this._runningQuery = true;
@@ -342,7 +295,7 @@ enyo.kind({
 	},
 	_insertFavoriteFinished: function (data, callback) {
 		try {
-			this.refreshFavorites();
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
@@ -351,14 +304,7 @@ enyo.kind({
 		}
 	},
 	deleteFavorite: function (id, callback) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			this._deleteFavorite_worker(id, callback);
-		} else {
-			//Convert arguments to a Real Array - http://www.sitepoint.com/arguments-a-javascript-oddity/
-			var args = Array.prototype.slice.call(arguments);
-			
-			this._workQueue.push({func: enyo.bind(this, this._deleteFavorite_worker), args: args});
-		}
+		this._createWorkItem(enyo.bind(this, this._deleteFavorite_worker, id, callback));
 	},
 	_deleteFavorite_worker: function (id, callback) {
 		this._runningQuery = true;
@@ -372,7 +318,7 @@ enyo.kind({
 	},
 	_deleteFavoriteFinish: function (id, callback) {
 		try {
-			this.refreshFavorites();
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
