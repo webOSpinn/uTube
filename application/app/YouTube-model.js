@@ -113,6 +113,7 @@ enyo.kind({
 			}
 
 		} finally {
+			//Because of the recursion we need to look for more work here
 			this.bound._lookForMoreWork();
 		}
 	},
@@ -123,19 +124,17 @@ enyo.kind({
 	},
 	_refreshYouTubeEntities_worker: function () {
 		if(this.youTubeEntitiesUpdatedCallback !== null) {
-			try{
-				this._runningQuery = true;
-				var query = {
-						sql: "SELECT " + this.youTubeEntitiesColumns.join(", ") + " FROM youTubeEntities ORDER BY name",
-						values: []
-					}
-				this.$.db.query(query, {
-					onSuccess: enyo.bind(this, this._onYouTubeEntityQuerySuccess),
-					onError: this.bound._databaseError
-				})
-			} catch (ex) {
-				this.warn("Exception: " + ex);
-			}
+			this._runningQuery = true;
+			var query = {
+					sql: "SELECT " + this.youTubeEntitiesColumns.join(", ") + " FROM youTubeEntities ORDER BY name",
+					values: []
+				}
+			this.$.db.query(query, {
+				onSuccess: enyo.bind(this, this._onYouTubeEntityQuerySuccess),
+				onError: this.bound._databaseError
+			})
+		} else {
+			this.bound._lookForMoreWork();
 		}
 	},
 	_onYouTubeEntityQuerySuccess: function(result) {
@@ -169,10 +168,10 @@ enyo.kind({
 	},
 	_insertYouTubeEntityFinished: function (data, callback) {
 		try {
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
 			this.bound._lookForMoreWork();
 		}
@@ -215,13 +214,13 @@ enyo.kind({
 	},
 	_updateYouTubeEntityFinished: function (id, callback) {
 		try {
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (id === null) {
 				id = this.$.db.lastInsertID();
 			}
 			if (Spinn.Utils.exists(callback)) {
 				callback(id);
 			}
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
 			this.bound._lookForMoreWork();
 		}
@@ -241,10 +240,10 @@ enyo.kind({
 	},
 	_deleteYouTubeEntityFinish: function (id, callback) {
 		try {
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
 			this.bound._lookForMoreWork();
 		}
@@ -270,6 +269,8 @@ enyo.kind({
 			} catch (ex) {
 				this.warn("Exception: " + ex);
 			}
+		} else {
+			this.bound._lookForMoreWork();
 		}
 	},
 	_onFavoriteQuerySuccess: function(result) {
@@ -295,10 +296,10 @@ enyo.kind({
 	},
 	_insertFavoriteFinished: function (data, callback) {
 		try {
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 		} finally {
 			this.bound._lookForMoreWork();
 		}
@@ -318,10 +319,10 @@ enyo.kind({
 	},
 	_deleteFavoriteFinish: function (id, callback) {
 		try {
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
+			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 		} finally {
 			this.bound._lookForMoreWork();
 		}
