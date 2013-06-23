@@ -12,57 +12,25 @@ enyo.kind({
 			database: "ext:" + (enyo.g11n.getPlatform() === "device" ? enyo.fetchAppId() : "com.spinn.utube"),
 			version: "",
 			debug: (Spinn.Utils.exists(enyo.fetchFrameworkConfig().debuggingEnabled) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
-		}
+		},
+		{ name:"workQueue", kind:"Spinn.WorkQueue"}
 	],
 	constructor: function () {
 		this.inherited(arguments);
-		this._workQueue = [];
 		this.currentYouTubeEntity = null;
 		this.currentYouTubeEntities = null;
-		this._runningQuery = false;
 		this.youTubeEntitiesColumns = ["uTubeId", "name", "entityType", "numVideos"];
 		this.favoritesColumns = ["videoId", "title"];
 		this.bound = {
-			_processWorkQueue: enyo.bind(this, this._processWorkQueue),
-			_databaseError: enyo.bind(this, this._databaseError),
-			_lookForMoreWork: enyo.bind(this, this._lookForMoreWork)
+			_databaseError: enyo.bind(this, this._databaseError)
 		}
 	},
 	create: function () {
 		this.inherited(arguments);
 		if (!localStorage["utube.firstRun"]) {
-			this._createWorkItemAtStart(enyo.bind(this, this._populateDatabase_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._populateDatabase_worker));
 		} else {
-			this._createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
-		}
-	},
-	_createWorkItem: function(workItem) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			workItem();
-		} else {
-			this._workQueue.push(workItem);
-		}
-	},
-	_createWorkItemAtStart: function(workItem) {
-		if(!this._runningQuery && this._workQueue.length == 0) {
-			workItem();
-		} else {
-			this._workQueue.splice(0,0,workItem);
-		}
-	},
-	_processWorkQueue: function() {
-		//If we have any work to do
-		if(this._workQueue.length > 0) {
-			//Grab the next item from the list
-			var workItem = this._workQueue.splice(0,1)[0];
-			workItem();
-		}
-	},
-	_lookForMoreWork: function () {
-		this._runningQuery = false;
-		//Process next item in the queue
-		if(this._workQueue.length > 0) {
-			this.bound._processWorkQueue();
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
 		}
 	},
 	_databaseError: function (er) {
@@ -74,11 +42,10 @@ enyo.kind({
 				this.error("Database error (" + er.code + "): " + er.message);
 			}
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	_populateDatabase_worker: function () {
-		this._runningQuery = true;
 		this.$.db.setSchemaFromURL("schemas/schema.json", {
 			onSuccess: enyo.bind(this, this._finishFirstRun),
 			onError: this.bound._databaseError
@@ -88,43 +55,40 @@ enyo.kind({
 		try {
 			localStorage["utube.firstRun"] = "true";
 			this.$.db.changeVersion("1.0");
-			this._createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
-	//This function is recursive - after each update it will fire again and look for anymore updates
+	//This function is recursive - after each update it will fire again and look for any more updates
 	_updateDatabase_worker: function () {
-		try {
-			var currentDbVersion = this.$.db.getVersion();
-			var updated = false;
-			this._runningQuery = true;
-			
-			//Only do one update per loop
-			if(currentDbVersion == "1.0" && updated != true) {
-				updated = true;
-				currentDbVersion = "1.1";
-				//NOTE: had to fix glitch with changeVersionWithSchemaFromUrl in onecrayon.Database so the options 
-				//are passed and the success and failure callbacks can be executed
-				this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
-					onSuccess: enyo.bind(this, this._createWorkItemAtStart, enyo.bind(this, this._updateDatabase_worker)),
-					onError: this.bound._databaseError
-				})
-			}
-
-		} finally {
-			//Because of the recursion we need to look for more work here
-			this.bound._lookForMoreWork();
+		var currentDbVersion = this.$.db.getVersion();
+		var updated = false;
+		
+		//Only do one update per loop
+		if(currentDbVersion == "1.0" && updated != true) {
+			updated = true;
+			currentDbVersion = "1.1";
+			//NOTE: had to fix glitch with changeVersionWithSchemaFromUrl in onecrayon.Database so the options 
+			//are passed and the success and failure callbacks can be executed
+			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
+				onSuccess: enyo.bind(this, this._updateDatabase_worker),
+				onError: this.bound._databaseError
+			})
+		}
+		
+		//If nothing was updated we have made it to the end of the recursion - look for the next item in the queue
+		if (updated == false) {
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	
 	/*Start YouTubeEntities code*/
 	refreshYouTubeEntities: function () {
-		this._createWorkItem(enyo.bind(this, this._refreshYouTubeEntities_worker));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._refreshYouTubeEntities_worker));
 	},
 	_refreshYouTubeEntities_worker: function () {
 		if(this.youTubeEntitiesUpdatedCallback !== null) {
-			this._runningQuery = true;
 			var query = {
 					sql: "SELECT " + this.youTubeEntitiesColumns.join(", ") + " FROM youTubeEntities ORDER BY name",
 					values: []
@@ -134,7 +98,7 @@ enyo.kind({
 				onError: this.bound._databaseError
 			})
 		} else {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	_onYouTubeEntityQuerySuccess: function(result) {
@@ -152,14 +116,13 @@ enyo.kind({
 				this.youTubeEntitiesUpdatedCallback(this.currentYouTubeEntities);
 			}
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	insertYouTubeEntity: function (data, callback) {
-		this._createWorkItem(enyo.bind(this, this._insertYouTubeEntity_worker, data, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._insertYouTubeEntity_worker, data, callback));
 	},
 	_insertYouTubeEntity_worker: function (data, callback) {
-		this._runningQuery = true;
 		var b = this.$.db.getInsert("youTubeEntities", data);
 		this.$.db.query(b, {
 			onSuccess: enyo.bind(this, this._insertYouTubeEntityFinished, data, callback),
@@ -171,16 +134,15 @@ enyo.kind({
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	getYouTubeEntity: function (id, callback) {
-		this._createWorkItem(enyo.bind(this, this._getYouTubeEntity_worker, id, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._getYouTubeEntity_worker, id, callback));
 	},
 	_getYouTubeEntity_worker: function (id, callback) {
-		this._runningQuery = true;
 		var selectCommand = this.$.db.getSelect("youTubeEntities", this.youTubeEntitiesColumns, {
 			uTubeId: id
 		});
@@ -196,14 +158,13 @@ enyo.kind({
 			}
 			callback(a);
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	updateYouTubeEntity: function (id, value, callback) {
-		this._createWorkItem(enyo.bind(this, this._updateYouTubeEntity_worker, id, value, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._updateYouTubeEntity_worker, id, value, callback));
 	},
 	_updateYouTubeEntity_worker: function (id, value, callback) {
-		this._runningQuery = true;
 		var sqlCommand = this.$.db.getUpdate("youTubeEntities", value, {
 				uTubeId: id
 			})
@@ -220,16 +181,15 @@ enyo.kind({
 			if (Spinn.Utils.exists(callback)) {
 				callback(id);
 			}
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	deleteYouTubeEntity: function (id, callback) {
-		this._createWorkItem(enyo.bind(this, this._deleteYouTubeEntity_worker, id, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._deleteYouTubeEntity_worker, id, callback));
 	},
 	_deleteYouTubeEntity_worker: function (id, callback) {
-		this._runningQuery = true;
 		var deleteCommand = this.$.db.getDelete("youTubeEntities", {
 			uTubeId: id
 		});
@@ -243,34 +203,29 @@ enyo.kind({
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	/*End YouTubeEntities code*/
 	
 	/*Start Favorites code*/
 	refreshFavorites: function () {
-		this._createWorkItem(enyo.bind(this, this._refreshFavorites_worker));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._refreshFavorites_worker));
 	},
 	_refreshFavorites_worker: function () {
 		if(this.favoritesUpdatedCallback !== null) {
-			try{
-				this._runningQuery = true;
-				var query = {
-						sql: "SELECT " + this.favoritesColumns.join(", ") + " FROM favorites",
-						values: []
-					};
-				this.$.db.query(query, {
-					onSuccess: enyo.bind(this, this._onFavoriteQuerySuccess),
-					onError: this.bound._databaseError
-				})
-			} catch (ex) {
-				this.warn("Exception: " + ex);
-			}
+			var query = {
+					sql: "SELECT " + this.favoritesColumns.join(", ") + " FROM favorites",
+					values: []
+				};
+			this.$.db.query(query, {
+				onSuccess: enyo.bind(this, this._onFavoriteQuerySuccess),
+				onError: this.bound._databaseError
+			})
 		} else {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	_onFavoriteQuerySuccess: function(result) {
@@ -280,14 +235,13 @@ enyo.kind({
 				this.favoritesUpdatedCallback(result);
 			}
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	insertFavorite: function (data, callback) {
-		this._createWorkItem(enyo.bind(this, this._insertFavorite_worker, data, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._insertFavorite_worker, data, callback));
 	},
 	_insertFavorite_worker: function (data, callback) {
-		this._runningQuery = true;
 		var b = this.$.db.getInsert("favorites", data);
 		this.$.db.query(b, {
 			onSuccess: enyo.bind(this, this._insertFavoriteFinished, data, callback),
@@ -299,16 +253,15 @@ enyo.kind({
 			if (Spinn.Utils.exists(callback)) {
 				callback(data);
 			}
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	deleteFavorite: function (id, callback) {
-		this._createWorkItem(enyo.bind(this, this._deleteFavorite_worker, id, callback));
+		this.$.workQueue.createWorkItem(enyo.bind(this, this._deleteFavorite_worker, id, callback));
 	},
 	_deleteFavorite_worker: function (id, callback) {
-		this._runningQuery = true;
 		var deleteCommand = this.$.db.getDelete("favorites", {
 			videoId: id
 		});
@@ -322,9 +275,9 @@ enyo.kind({
 			if (Spinn.Utils.exists(callback)) {
 				callback();
 			}
-			this._createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
+			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
 		} finally {
-			this.bound._lookForMoreWork();
+			this.$.workQueue.lookForMoreWork();
 		}
 	}
 	/*End Favorites code*/

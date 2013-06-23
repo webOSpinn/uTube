@@ -2,6 +2,7 @@ enyo.depends(
 	"stylesheets/style.css",
 	"Spinn/depends.js",
 	"YouTubeAPI/depends.js",
+	"app/WorkQueue.js",
 	"app/database-enyo.js",
 	"app/YouTube-model.js",
 	"AddEditEntityDialog/depends.js",
