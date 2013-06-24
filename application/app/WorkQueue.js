@@ -25,16 +25,6 @@ enyo.kind({
 			this._workQueue.push(workItem);
 		}
 	},
-	createWorkItemAtStart: function(workItem) {
-		if(!this._running && this._workQueue.length == 0) {
-			//Nothing in Queue and nothing currently running - just execute
-			this._running = true;
-			workItem();
-		} else {
-			//Insert work item at start
-			this._workQueue.splice(0,0,workItem);
-		}
-	},
 	lookForMoreWork: function () {
 		this._running = false;
 		//Process next item in the queue

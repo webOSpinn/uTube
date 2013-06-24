@@ -28,9 +28,9 @@ enyo.kind({
 	create: function () {
 		this.inherited(arguments);
 		if (!localStorage["utube.firstRun"]) {
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._populateDatabase_worker));
+			this.$.workQueue.createWorkItem(enyo.bind(this, this._populateDatabase_worker));
 		} else {
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
+			this.$.workQueue.createWorkItem(enyo.bind(this, this._updateDatabase_worker));
 		}
 	},
 	_databaseError: function (er) {
@@ -49,16 +49,13 @@ enyo.kind({
 		this.$.db.setSchemaFromURL("schemas/schema.json", {
 			onSuccess: enyo.bind(this, this._finishFirstRun),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_finishFirstRun: function () {
-		try {
 			localStorage["utube.firstRun"] = "true";
 			this.$.db.changeVersion("1.0");
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._updateDatabase_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
-		}
+			this._updateDatabase_worker();
+			//Don't call lookForMoreWork() as that will be handled by _updateDatabase_worker;
 	},
 	//This function is recursive - after each update it will fire again and look for any more updates
 	_updateDatabase_worker: function () {
@@ -74,7 +71,7 @@ enyo.kind({
 			this.$.db.changeVersionWithSchemaFromUrl(currentDbVersion, "schemas/updateSchemaV1.1.json", {
 				onSuccess: enyo.bind(this, this._updateDatabase_worker),
 				onError: this.bound._databaseError
-			})
+			});
 		}
 		
 		//If nothing was updated we have made it to the end of the recursion - look for the next item in the queue
@@ -96,7 +93,7 @@ enyo.kind({
 			this.$.db.query(query, {
 				onSuccess: enyo.bind(this, this._onYouTubeEntityQuerySuccess),
 				onError: this.bound._databaseError
-			})
+			});
 		} else {
 			this.$.workQueue.lookForMoreWork();
 		}
@@ -127,17 +124,14 @@ enyo.kind({
 		this.$.db.query(b, {
 			onSuccess: enyo.bind(this, this._insertYouTubeEntityFinished, data, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_insertYouTubeEntityFinished: function (data, callback) {
-		try {
-			if (Spinn.Utils.exists(callback)) {
-				callback(data);
-			}
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
+		if (Spinn.Utils.exists(callback)) {
+			callback(data);
 		}
+		this._refreshYouTubeEntities_worker();
+		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshYouTubeEntities_worker
 	},
 	getYouTubeEntity: function (id, callback) {
 		this.$.workQueue.createWorkItem(enyo.bind(this, this._getYouTubeEntity_worker, id, callback));
@@ -149,7 +143,7 @@ enyo.kind({
 		this.$.db.query(selectCommand, {
 			onSuccess: enyo.bind(this, this._getYouTubeEntityFinish, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_getYouTubeEntityFinish: function (callback, a) {
 		try {
@@ -167,24 +161,21 @@ enyo.kind({
 	_updateYouTubeEntity_worker: function (id, value, callback) {
 		var sqlCommand = this.$.db.getUpdate("youTubeEntities", value, {
 				uTubeId: id
-			})
+			});
 		this.$.db.query(sqlCommand, {
 			onSuccess: enyo.bind(this, this._updateYouTubeEntityFinished, id, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_updateYouTubeEntityFinished: function (id, callback) {
-		try {
-			if (id === null) {
-				id = this.$.db.lastInsertID();
-			}
-			if (Spinn.Utils.exists(callback)) {
-				callback(id);
-			}
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
+		if (id === null) {
+			id = this.$.db.lastInsertID();
 		}
+		if (Spinn.Utils.exists(callback)) {
+			callback(id);
+		}
+		this._refreshYouTubeEntities_worker();
+		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshYouTubeEntities_worker
 	},
 	deleteYouTubeEntity: function (id, callback) {
 		this.$.workQueue.createWorkItem(enyo.bind(this, this._deleteYouTubeEntity_worker, id, callback));
@@ -196,17 +187,14 @@ enyo.kind({
 		this.$.db.query(deleteCommand, {
 			onSuccess: enyo.bind(this, this._deleteYouTubeEntityFinish, id, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_deleteYouTubeEntityFinish: function (id, callback) {
-		try {
-			if (Spinn.Utils.exists(callback)) {
-				callback();
-			}
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshYouTubeEntities_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
+		if (Spinn.Utils.exists(callback)) {
+			callback();
 		}
+		this._refreshYouTubeEntities_worker();
+		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshYouTubeEntities_worker
 	},
 	/*End YouTubeEntities code*/
 	
@@ -223,7 +211,7 @@ enyo.kind({
 			this.$.db.query(query, {
 				onSuccess: enyo.bind(this, this._onFavoriteQuerySuccess),
 				onError: this.bound._databaseError
-			})
+			});
 		} else {
 			this.$.workQueue.lookForMoreWork();
 		}
@@ -246,17 +234,14 @@ enyo.kind({
 		this.$.db.query(b, {
 			onSuccess: enyo.bind(this, this._insertFavoriteFinished, data, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_insertFavoriteFinished: function (data, callback) {
-		try {
-			if (Spinn.Utils.exists(callback)) {
-				callback(data);
-			}
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
+		if (Spinn.Utils.exists(callback)) {
+			callback(data);
 		}
+		this._refreshFavorites_worker();
+		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshFavorites_worker
 	},
 	deleteFavorite: function (id, callback) {
 		this.$.workQueue.createWorkItem(enyo.bind(this, this._deleteFavorite_worker, id, callback));
@@ -268,17 +253,14 @@ enyo.kind({
 		this.$.db.query(deleteCommand, {
 			onSuccess: enyo.bind(this, this._deleteFavoriteFinish, id, callback),
 			onError: this.bound._databaseError
-		})
+		});
 	},
 	_deleteFavoriteFinish: function (id, callback) {
-		try {
-			if (Spinn.Utils.exists(callback)) {
-				callback();
-			}
-			this.$.workQueue.createWorkItemAtStart(enyo.bind(this, this._refreshFavorites_worker));
-		} finally {
-			this.$.workQueue.lookForMoreWork();
+		if (Spinn.Utils.exists(callback)) {
+			callback();
 		}
+		this._refreshFavorites_worker();
+		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshFavorites_worker
 	}
 	/*End Favorites code*/
 });
