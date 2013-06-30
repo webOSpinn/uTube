@@ -133,7 +133,7 @@ enyo.kind({
 		this._refreshYouTubeEntities_worker();
 		//Don't call lookForMoreWork() because that will be handled by the success callback in _refreshYouTubeEntities_worker
 	},
-	getYouTubeEntity: function (id, callback) {
+	/*getYouTubeEntity: function (id, callback) {
 		this.$.workQueue.createWorkItem(enyo.bind(this, this._getYouTubeEntity_worker, id, callback));
 	},
 	_getYouTubeEntity_worker: function (id, callback) {
@@ -154,7 +154,7 @@ enyo.kind({
 		} finally {
 			this.$.workQueue.lookForMoreWork();
 		}
-	},
+	},*/
 	updateYouTubeEntity: function (id, value, callback) {
 		this.$.workQueue.createWorkItem(enyo.bind(this, this._updateYouTubeEntity_worker, id, value, callback));
 	},
