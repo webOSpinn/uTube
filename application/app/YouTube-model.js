@@ -1,29 +1,16 @@
 enyo.kind({
 	name: "utube.YouTubeModel",
-	kind: enyo.Component,
+	kind: "Spinn.DataModel",
 	published: {
 		youTubeEntitiesUpdatedCallback: null,
 		favoritesUpdatedCallback: null
 	},
-	components: [
-		{
-			name: "db",
-			kind: "onecrayon.Database",
-			database: "ext:" + (enyo.g11n.getPlatform() === "device" ? enyo.fetchAppId() : "com.spinn.utube"),
-			version: "",
-			debug: (Spinn.Utils.exists(enyo.fetchFrameworkConfig().debuggingEnabled) ? enyo.fetchFrameworkConfig().debuggingEnabled : false)
-		},
-		{ name:"workQueue", kind:"Spinn.WorkQueue"}
-	],
 	constructor: function () {
 		this.inherited(arguments);
 		this.currentYouTubeEntity = null;
 		this.currentYouTubeEntities = null;
 		this.youTubeEntitiesColumns = ["uTubeId", "name", "entityType", "numVideos"];
 		this.favoritesColumns = ["videoId", "title"];
-		this.bound = {
-			_databaseError: enyo.bind(this, this._databaseError)
-		}
 	},
 	create: function () {
 		this.inherited(arguments);
@@ -31,18 +18,6 @@ enyo.kind({
 			this.$.workQueue.createWorkItem(enyo.bind(this, this._populateDatabase_worker));
 		} else {
 			this.$.workQueue.createWorkItem(enyo.bind(this, this._updateDatabase_worker));
-		}
-	},
-	_databaseError: function (er) {
-		try {
-			if (er.code === 1) {
-				this.error("Database error (" + er.code + "): " + er.message);
-				//this.populateDatabase();
-			} else {
-				this.error("Database error (" + er.code + "): " + er.message);
-			}
-		} finally {
-			this.$.workQueue.lookForMoreWork();
 		}
 	},
 	_populateDatabase_worker: function () {
