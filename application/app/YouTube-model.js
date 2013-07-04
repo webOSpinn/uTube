@@ -37,7 +37,7 @@ enyo.kind({
 		try {
 			if (er.code === 1) {
 				this.error("Database error (" + er.code + "): " + er.message);
-				this.populateDatabase();
+				//this.populateDatabase();
 			} else {
 				this.error("Database error (" + er.code + "): " + er.message);
 			}
